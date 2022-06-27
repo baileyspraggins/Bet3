@@ -1,0 +1,17 @@
+img {
+    height: 200px;
+    padding-top: 25px;
+    padding-bottom: 25px;
+    pointer-events: none;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+.container {
+display: flex;
+flex-direction: column;
+font-size: calc(10px + 2vmin);
+color: black;
+position: relative;
+}
