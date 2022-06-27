@@ -2,9 +2,10 @@ import axios from "axios";
 import React, { useEffect, useState } from "react";
 import { Table } from "react-bootstrap";
 import HomeScreen from "../Routes/HomeScreen";
+import Config from '../config.json';
 
 const AvailableWagers = () => {
-    const api_key = 'e961d6faf9d3cd9c72b1e4bbacf9c9dc';
+    const api_key = Config["odds-api"];
 
     const [oddsData, setOddsData] = useState([]);
     // Get a list of in season sports
