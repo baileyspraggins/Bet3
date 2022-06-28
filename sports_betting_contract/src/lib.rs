@@ -1,80 +1,112 @@
 use near_sdk::borsh::{self, BorshDeserialize, BorshSerialize};
+use near_sdk::serde::{Deserialize, Serialize};
 use near_sdk::{env, near_bindgen, AccountId, Promise};
 
 const ONE_NEAR: u128 = 1_000_000_000_000_000_000_000_000;
 
 // Describes the status of the bet.
 // Win or Lose describe the result of the user who initialized the bet
-#[derive(BorshDeserialize, BorshSerialize, Debug)]
-enum BetStatus {
+#[derive(BorshDeserialize, BorshSerialize, Deserialize, Serialize, Debug)]
+#[serde(crate = "near_sdk::serde")]
+pub enum BetStatus {
     Win,
     Lose,
+    Initialized,
     Pending,
     InProgress,
 }
 
-// team one is always the team selected to win by the user who initializes the bet.
+impl Default for BetStatus {
+    fn default() -> Self {
+        BetStatus::Initialized
+    }
+}
+
+#[derive(Default, BorshSerialize, BorshDeserialize, Debug)]
+pub struct UserData {
+    account: AccountId,
+    potential_winnings: u128,
+}
+
+// Participant hash map has the account id and the amount wagering
+// 1st participant is the bet initializer
+// 2nd participant is the bet taker
 #[near_bindgen]
 #[derive(Default, BorshSerialize, BorshDeserialize, Debug)]
-struct Bet {
-    teamOneOdds: i32,
-    teamTwoOdds: i32,
-    betAmount: u128,
-    betResult: BetStatus,
-    participants: [String; 2],
+pub struct Bet {
+    bet_odds: i128,
+    bet_amount: u128,
+    bet_result: BetStatus,
+    participants: Vec<UserData>,
 }
 
 #[near_bindgen]
 impl Bet {
     #[init]
-    pub fn setNewContract(args: &[String]) -> Self {
-        let user: AccountId = env::predecessor_account_id();
-
+    pub fn new_contract() -> Self {
         Self {
-            teamOneOdds: &args[0],
-            teamTwoOdds: &args[1],
-            betAmount: (&args[2] as u128) * ONE_NEAR,
-            betResult: BetStatus::Pending,
-            participants: [],
-        };
-
-        Self.fund_contract(Self.betAmount);
-        Self.participants.push(user);
-
-        Self
+            bet_odds: 150,
+            bet_amount: 0,
+            bet_result: BetStatus::Initialized,
+            participants: Vec::new(),
+        }
     }
 
-    pub fn setWinner(&self, winner: u8) {
+    pub fn place_bet(&mut self) {
+        let bet_amount = 10 as u128 * ONE_NEAR;
+
+        if self.participants.len() > 0 {
+            panic!("This bet has already been created. You can back the bet");
+        }
+
+        let user: UserData = UserData {
+            account: env::predecessor_account_id(),
+            potential_winnings: self.get_potential_winnings(),
+        };
+
+        Bet::fund_contract(bet_amount);
+
+        self.participants.push(user);
+    }
+
+    pub fn accept_bet(&mut self) {
+        if self.participants.len() < 1 {
+            panic!("This wager has yet to be initialized");
+        } else if self.participants.len() > 1 {
+            panic!("This wager has already been backed");
+        } else {
+            let backer: UserData = UserData {
+                account: env::predecessor_account_id(),
+                potential_winnings: self.get_potential_winnings(),
+            };
+
+            Bet::fund_contract(self.bet_amount);
+
+            self.participants.push(backer);
+        }
+    }
+
+    pub fn set_winner(&mut self, winner: u8) {
         let winner_id: AccountId;
+        let winner_reward: u128;
 
         match winner {
             1 => {
-                self.betResult = BetStatus::Win;
-                winner_id = self.participants[0];
+                self.bet_result = BetStatus::Win;
+                winner_id = self.participants[0].account.clone();
+                winner_reward = self.participants[0].potential_winnings;
+                // Pay the winner with the respective bet amount.
+                Bet::pay_winner(winner_id, winner_reward);
             }
             2 => {
-                self.betResult = BetStatus::Lose;
-                winner_id = self.participants[1];
+                self.bet_result = BetStatus::Lose;
+                winner_id = self.participants[1].account.clone();
+                winner_reward = self.participants[1].potential_winnings;
+                // Pay the winner with the respective bet amount.
+                Bet::pay_winner(winner_id, winner_reward);
             }
             _ => panic!("Please enter an integer of 1 or 2"),
         }
-
-        // Pay the winner with the respective bet amount.
-        //self.pay_winner(winner_id, )
-    }
-
-    pub fn acceptBet(&self) {
-        let backers_account = env::predecessor_account_id();
-        let mut amount: u128;
-
-        if self.teamOneOdds < 0 {
-            amount = ((100 * self.betAmount) / self.teamOneOdds) * ONE_NEAR;
-        } else {
-            amount = ((self.betAmount * self.teamOneOdds) / 100) * ONE_NEAR;
-        }
-
-        self.fund_contract(amount);
-        self.participants.push(backers_account);
     }
 
     #[payable]
@@ -86,5 +118,18 @@ impl Bet {
     #[payable]
     fn pay_winner(winner: AccountId, amount: u128) {
         Promise::new(winner).transfer(amount);
+    }
+
+    fn get_potential_winnings(&self) -> u128 {
+        let amount;
+
+        if self.bet_odds < 0 {
+            let signed_odds: u128 = (self.bet_odds + (self.bet_odds * -2)) as u128;
+            amount = ((100 * self.bet_amount) / signed_odds as u128) * ONE_NEAR;
+        } else {
+            amount = ((self.bet_amount * self.bet_odds as u128) / 100) * ONE_NEAR;
+        }
+
+        amount
     }
 }
