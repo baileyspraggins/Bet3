@@ -1,7 +1,7 @@
 [package]
 name = "sports_betting_contract"
 version = "0.1.0"
-authors = "Bailey Spraggins"
+authors = ["Bailey Spraggins"]
 edition = "2018"
 
 [lib]
