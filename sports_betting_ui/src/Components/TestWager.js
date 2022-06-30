@@ -1,8 +1,14 @@
 import React from 'react';
 import { Table } from 'react-bootstrap';
-import './Tester.css';
+import './TestWager.css';
 
-const Tester = () => {
+const TestWager = () => {
+
+    const initBet = () => {
+        
+    }
+
+
     return (
         <div className='container'>
             <h1>Smart Contract Betting</h1> 
@@ -24,10 +30,10 @@ const Tester = () => {
                         <p>Colorado Avalanche -150</p>
                     </td>
                     <td>
-                        <button>Place Bet</button>
+                        <button onClick={initBet}>Place Bet</button>
                         <br/>
                         <br />
-                        <button>Place Bet</button>
+                        <button onClick={initBet}>Place Bet</button>
                     </td>
                 </tbody>
             </Table>
@@ -35,4 +41,4 @@ const Tester = () => {
     )
 }
 
-export default Tester;
+export default TestWager;
