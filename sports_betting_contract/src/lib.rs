@@ -25,6 +25,7 @@ impl Default for BetStatus {
 #[derive(Default, BorshSerialize, BorshDeserialize, Debug)]
 pub struct UserData {
     account: AccountId,
+    deposited_amount: u128,
     potential_winnings: u128,
 }
 
@@ -52,23 +53,23 @@ impl Bet {
         }
     }
 
+    #[payable]
     pub fn place_bet(&mut self) {
-        let bet_amount = 10 as u128 * ONE_NEAR;
-
         if self.participants.len() > 0 {
             panic!("This bet has already been created. You can back the bet");
         }
 
         let user: UserData = UserData {
-            account: env::predecessor_account_id(),
+            account: env::signer_account_id(),
+            deposited_amount: env::attached_deposit(),
             potential_winnings: self.get_potential_winnings(),
         };
 
-        Bet::fund_contract(bet_amount);
-
+        self.bet_amount = user.deposited_amount;
         self.participants.push(user);
     }
 
+    #[payable]
     pub fn accept_bet(&mut self) {
         if self.participants.len() < 1 {
             panic!("This wager has yet to be initialized");
@@ -76,11 +77,10 @@ impl Bet {
             panic!("This wager has already been backed");
         } else {
             let backer: UserData = UserData {
-                account: env::predecessor_account_id(),
+                account: env::signer_account_id(),
+                deposited_amount: env::attached_deposit(),
                 potential_winnings: self.get_potential_winnings(),
             };
-
-            Bet::fund_contract(self.bet_amount);
 
             self.participants.push(backer);
         }
@@ -109,13 +109,6 @@ impl Bet {
         }
     }
 
-    #[payable]
-    fn fund_contract(amount: u128) {
-        let contract_address = env::current_account_id();
-        Promise::new(contract_address).transfer(amount);
-    }
-
-    #[payable]
     fn pay_winner(winner: AccountId, amount: u128) {
         Promise::new(winner).transfer(amount);
     }
