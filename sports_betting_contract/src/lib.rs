@@ -1,6 +1,9 @@
 use near_sdk::borsh::{self, BorshDeserialize, BorshSerialize};
+use near_sdk::collections::{LookupMap, UnorderedSet};
 use near_sdk::serde::{Deserialize, Serialize};
-use near_sdk::{env, near_bindgen, AccountId, Promise};
+use near_sdk::{env, near_bindgen, AccountId, PanicOnDefault, Promise};
+use rand::distributions::Alphanumeric;
+use rand::Rng;
 
 const ONE_NEAR: u128 = 1_000_000_000_000_000_000_000_000;
 
@@ -32,7 +35,6 @@ pub struct UserData {
 // Participant hash map has the account id and the amount wagering
 // 1st participant is the bet initializer
 // 2nd participant is the bet taker
-#[near_bindgen]
 #[derive(Default, BorshSerialize, BorshDeserialize, Debug)]
 pub struct Bet {
     bet_odds: i128,
@@ -42,21 +44,34 @@ pub struct Bet {
 }
 
 #[near_bindgen]
-impl Bet {
+#[derive(BorshSerialize, BorshDeserialize, PanicOnDefault)]
+pub struct BettingContract {
+    owner_id: AccountId,
+    wagers: LookupMap<String, Bet>,
+    active_wagers: UnorderedSet<String>,
+}
+
+#[near_bindgen]
+impl BettingContract {
     #[init]
-    pub fn new_contract() -> Self {
+    pub fn new(owner_id: AccountId) -> Self {
         Self {
-            bet_odds: 0,
-            bet_amount: 0,
-            bet_result: BetStatus::Initialized,
-            participants: Vec::new(),
+            owner_id,
+            wagers: LookupMap::new(b"c"),
+            active_wagers: UnorderedSet::new(b"a"),
         }
     }
 
     #[payable]
     pub fn place_bet(&mut self, wager_odds: i128) {
-        if self.participants.len() > 0 {
-            panic!("This bet has already been created. You can back the bet");
+        fn generate_id() -> String {
+            let id: String = rand::thread_rng()
+                .sample_iter(&Alphanumeric)
+                .take(16)
+                .map(char::from)
+                .collect();
+
+            id
         }
 
         let user: UserData = UserData {
@@ -65,16 +80,32 @@ impl Bet {
             potential_winnings: self.get_potential_winnings(),
         };
 
-        self.bet_odds = wager_odds;
-        self.bet_amount = user.deposited_amount;
-        self.participants.push(user);
+        let wager: Bet = Bet {
+            bet_odds: wager_odds,
+            bet_amount: user.deposited_amount,
+            bet_result: BetStatus::Pending,
+            participants: Vec::new(),
+        };
+
+        let wager_id = generate_id();
+
+        let existing_wager = self.wagers.insert(&wager_id, &wager);
+
+        assert!(
+            existing_wager.is_none(),
+            "Wager with this id already exists"
+        );
+
+        self.active_wagers.insert(&wager_id);
 
         println!(
-            "{} deposited {} NEAR to win {}",
-            self.participants[0].account,
-            (self.participants[0].deposited_amount / ONE_NEAR),
-            self.participants[0].potential_winnings
+            "{} placed a bet and deposited {} NEAR to win {}",
+            wager.participants[0].account,
+            (wager.participants[0].deposited_amount / ONE_NEAR),
+            wager.participants[0].potential_winnings
         );
+
+        println!("Wager Id is {}", &wager_id);
     }
 
     #[payable]
