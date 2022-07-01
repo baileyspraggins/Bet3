@@ -1,10 +1,14 @@
+import { WalletConnection } from 'near-api-js';
 import React from 'react';
 import { Table } from 'react-bootstrap';
 import './TestWager.css';
 
 const TestWager = () => {
 
-    const initBet = () => {
+    const initBet = (bettingOdds) => {
+        // Call the new_contract method with no args, and no attachedDeposit
+
+        // Call the place_bet method with a i128 arg, and an attachedDeposit in NEAR.
         
     }
 
@@ -30,10 +34,10 @@ const TestWager = () => {
                         <p>Colorado Avalanche -150</p>
                     </td>
                     <td>
-                        <button onClick={initBet}>Place Bet</button>
+                        <button onClick={initBet(110)}>Place Bet</button>
                         <br/>
                         <br />
-                        <button onClick={initBet}>Place Bet</button>
+                        <button onClick={initBet(-150)}>Place Bet</button>
                     </td>
                 </tbody>
             </Table>

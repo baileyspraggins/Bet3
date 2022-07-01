@@ -18,6 +18,7 @@ function App({contract, walletConnection, currentUser }) {
 
   const signOut = () => {
     walletConnection.signOut();
+    window.location.replace(window.location.origin + window.location.pathname);
     console.log("button clicked");
   };
 
@@ -27,13 +28,13 @@ function App({contract, walletConnection, currentUser }) {
       <TestWager />
       { currentUser
           ? <div>
-              <h2>
+              <h3>
                 Account ID: {currentUser.accountId}
                 <br />
-              </h2>
-              <h2>
-                Account Balance: {nearAPI.utils.format.parseNearAmount(currentUser.balance)}
-              </h2>
+              </h3>
+              <h3>
+                Account Balance: {nearAPI.utils.format.formatNearAmount(currentUser.balance)} NEAR
+              </h3>
               <button onClick={signOut}>Log out</button>
             </div>
           : 
@@ -43,6 +44,9 @@ function App({contract, walletConnection, currentUser }) {
             <button onClick={signIn}>Log in</button>
           </div>
         }
+        <div className='selectWinner'>
+          <h1>Select Winner</h1>
+        </div>
     </div>
   );
 }

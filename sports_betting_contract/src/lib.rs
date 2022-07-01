@@ -46,7 +46,7 @@ impl Bet {
     #[init]
     pub fn new_contract() -> Self {
         Self {
-            bet_odds: 150,
+            bet_odds: 0,
             bet_amount: 0,
             bet_result: BetStatus::Initialized,
             participants: Vec::new(),
@@ -54,7 +54,7 @@ impl Bet {
     }
 
     #[payable]
-    pub fn place_bet(&mut self) {
+    pub fn place_bet(&mut self, wager_odds: i128) {
         if self.participants.len() > 0 {
             panic!("This bet has already been created. You can back the bet");
         }
@@ -65,8 +65,16 @@ impl Bet {
             potential_winnings: self.get_potential_winnings(),
         };
 
+        self.bet_odds = wager_odds;
         self.bet_amount = user.deposited_amount;
         self.participants.push(user);
+
+        println!(
+            "{} deposited {} NEAR to win {}",
+            self.participants[0].account,
+            (self.participants[0].deposited_amount / ONE_NEAR),
+            self.participants[0].potential_winnings
+        );
     }
 
     #[payable]
@@ -82,7 +90,20 @@ impl Bet {
                 potential_winnings: self.get_potential_winnings(),
             };
 
+            if backer.deposited_amount
+                < (self.participants[0].potential_winnings - self.participants[0].deposited_amount)
+            {
+                panic!("Please deposit more NEAR");
+            }
+
             self.participants.push(backer);
+
+            println!(
+                "{} deposited {} NEAR to win {}",
+                self.participants[1].account,
+                (self.participants[1].deposited_amount / ONE_NEAR),
+                self.participants[1].potential_winnings
+            );
         }
     }
 
@@ -94,23 +115,30 @@ impl Bet {
             1 => {
                 self.bet_result = BetStatus::Win;
                 winner_id = self.participants[0].account.clone();
-                winner_reward = self.participants[0].potential_winnings;
+                winner_reward =
+                    self.participants[0].potential_winnings + self.participants[0].deposited_amount;
                 // Pay the winner with the respective bet amount.
-                Bet::pay_winner(winner_id, winner_reward);
+                Bet::pay_winner(&winner_id, winner_reward);
             }
             2 => {
                 self.bet_result = BetStatus::Lose;
                 winner_id = self.participants[1].account.clone();
-                winner_reward = self.participants[1].potential_winnings;
+                winner_reward =
+                    self.participants[1].potential_winnings + self.participants[1].deposited_amount;
                 // Pay the winner with the respective bet amount.
-                Bet::pay_winner(winner_id, winner_reward);
+                Bet::pay_winner(&winner_id, winner_reward);
             }
             _ => panic!("Please enter an integer of 1 or 2"),
         }
     }
 
-    fn pay_winner(winner: AccountId, amount: u128) {
-        Promise::new(winner).transfer(amount);
+    fn pay_winner(winner: &AccountId, amount: u128) {
+        Promise::new(winner.to_string()).transfer(amount);
+        println!(
+            "{} received won the bet and has received {} NEAR",
+            winner,
+            (amount / ONE_NEAR)
+        )
     }
 
     fn get_potential_winnings(&self) -> u128 {
@@ -118,9 +146,9 @@ impl Bet {
 
         if self.bet_odds < 0 {
             let signed_odds: u128 = (self.bet_odds + (self.bet_odds * -2)) as u128;
-            amount = ((100 * self.bet_amount) / signed_odds as u128) * ONE_NEAR;
+            amount = (100 * self.bet_amount) / signed_odds as u128;
         } else {
-            amount = ((self.bet_amount * self.bet_odds as u128) / 100) * ONE_NEAR;
+            amount = (self.bet_amount * self.bet_odds as u128) / 100;
         }
 
         amount
