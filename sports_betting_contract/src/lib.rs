@@ -109,10 +109,12 @@ impl BettingContract {
     }
 
     #[payable]
-    pub fn accept_bet(&mut self) {
-        if self.participants.len() < 1 {
+    pub fn accept_bet(&mut self, wager_id: String) {
+        let selected_wager = self.get_wager(wager_id);
+
+        if selected_wager.participants.len() < 1 {
             panic!("This wager has yet to be initialized");
-        } else if self.participants.len() > 1 {
+        } else if selected_wager.participants.len() > 1 {
             panic!("This wager has already been backed");
         } else {
             let backer: UserData = UserData {
@@ -122,23 +124,26 @@ impl BettingContract {
             };
 
             if backer.deposited_amount
-                < (self.participants[0].potential_winnings - self.participants[0].deposited_amount)
+                < (selected_wager.participants[0].potential_winnings
+                    - selected_wager.participants[0].deposited_amount)
             {
                 panic!("Please deposit more NEAR");
             }
 
-            self.participants.push(backer);
+            selected_wager.participants.push(backer);
+            selected_wager.bet_result = BetStatus::InProgress;
 
             println!(
                 "{} deposited {} NEAR to win {}",
-                self.participants[1].account,
-                (self.participants[1].deposited_amount / ONE_NEAR),
-                self.participants[1].potential_winnings
+                selected_wager.participants[1].account,
+                (selected_wager.participants[1].deposited_amount / ONE_NEAR),
+                selected_wager.participants[1].potential_winnings
             );
         }
     }
 
-    pub fn set_winner(&mut self, winner: u8) {
+    pub fn set_winner(&mut self, wager_id: String, winner: u8) {
+        let selected_wager = self.get_wager(wager_id);
         let winner_id: AccountId;
         let winner_reward: u128;
 
@@ -183,5 +188,17 @@ impl BettingContract {
         }
 
         amount
+    }
+
+    pub fn get_wager(&self, wager_id: String) -> Bet {
+        let wager: Bet;
+
+        if self.wagers.contains_key(&wager_id) {
+            wager = self.wager.get(&wager_id);
+        } else {
+            panic!("Please enter a correct wager id");
+        }
+
+        wager
     }
 }
