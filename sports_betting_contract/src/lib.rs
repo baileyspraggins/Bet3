@@ -12,11 +12,12 @@ const ONE_NEAR: u128 = 1_000_000_000_000_000_000_000_000;
 #[derive(BorshDeserialize, BorshSerialize, Deserialize, Serialize, Debug)]
 #[serde(crate = "near_sdk::serde")]
 pub enum BetStatus {
-    Win,
-    Lose,
     Initialized,
     Pending,
     InProgress,
+    Win,
+    Lose,
+    Canceled,
 }
 
 impl Default for BetStatus {
@@ -139,7 +140,7 @@ impl BettingContract {
             "The creater of the contract cannot participate in the bet"
         );
 
-        let mut selected_wager = self.get_wager(wager_id);
+        let mut selected_wager = self.get_wager(&wager_id);
 
         if selected_wager.participants.len() < 1 {
             panic!("This wager has yet to be initialized");
@@ -178,7 +179,7 @@ impl BettingContract {
             "Only the owner of this contract can set the winner of the bet it"
         );
 
-        let mut selected_wager = self.get_wager(wager_id);
+        let mut selected_wager = self.get_wager(&wager_id);
         let winner_id: AccountId;
         let winner_reward: u128;
 
@@ -199,6 +200,21 @@ impl BettingContract {
         }
 
         BettingContract::pay_winner(&winner_id, winner_reward);
+        self.remove_from_active_wagers(&wager_id);
+    }
+
+    pub fn cancel_wager(&mut self, wager_id: &String) {
+        let mut selected_wager = self.get_wager(&wager_id);
+
+        assert_eq!(
+            env::predecessor_account_id(),
+            selected_wager.participants[0].account,
+            "Only the user who placed the initial bet can cancel the wager."
+        );
+
+        Promise::new(env::predecessor_account_id()).transfer(selected_wager.bet_amount);
+        selected_wager.bet_result = BetStatus::Canceled;
+        self.remove_from_active_wagers(&wager_id);
     }
 
     fn pay_winner(winner: &AccountId, amount: u128) {
@@ -210,8 +226,12 @@ impl BettingContract {
         )
     }
 
+    fn remove_from_active_wagers(&mut self, wager_id: &String) {
+        self.active_wagers.remove(&wager_id);
+    }
+
     // View Functions
-    pub fn get_wager(&self, wager_id: String) -> Bet {
+    pub fn get_wager(&self, wager_id: &String) -> Bet {
         let wager: Bet;
 
         if self.wagers.contains_key(&wager_id) {
@@ -224,7 +244,7 @@ impl BettingContract {
     }
 
     pub fn get_wager_status(&self, wager_id: String) -> BetStatus {
-        let selected_wager = self.get_wager(wager_id);
+        let selected_wager = self.get_wager(&wager_id);
 
         selected_wager.bet_result
     }
