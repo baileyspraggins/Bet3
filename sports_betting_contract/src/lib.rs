@@ -360,4 +360,64 @@ mod tests {
             "BetStutus should be pending"
         );
     }
+
+    #[test]
+    fn place_bet_with_negative_odds() {
+        let user_id: AccountId = "user1.testnet".to_string();
+
+        let context = get_context(user_id, 5 * ONE_NEAR);
+        testing_env!(context);
+
+        let mut contract = get_initialized_bet();
+
+        contract.place_bet(-150);
+
+        let check_active_wagers = contract.active_wagers.len() > 0;
+
+        let new_bet = contract
+            .wagers
+            .get(&contract.active_wagers.to_vec()[0])
+            .unwrap();
+
+        assert_eq!(
+            true, check_active_wagers,
+            "Expected an active wager length greater than 1"
+        );
+
+        assert_eq!(
+            5 * ONE_NEAR,
+            new_bet.bet_amount,
+            "Expected a different bet amount"
+        );
+
+        assert_eq!(
+            5 * ONE_NEAR,
+            new_bet.participants[0].deposited_amount,
+            "Expected a different deposit amount"
+        );
+
+        assert_eq!(
+            3333333333333333333333333, new_bet.participants[0].potential_winnings,
+            "Expected value for potential winnings"
+        );
+
+        assert_eq!(
+            BetStatus::Pending,
+            new_bet.bet_result,
+            "BetStutus should be pending"
+        );
+    }
+
+    #[test]
+    #[should_panic(expected = "The creater of the contract cannot participate in the bet")]
+    fn contract_owner_place_bet() {
+        let user_id: AccountId = "sportsbettingcontract.testnet".to_string();
+
+        let context = get_context(user_id, 5 * ONE_NEAR);
+        testing_env!(context);
+
+        let mut contract = get_initialized_bet();
+
+        contract.place_bet(125);
+    }
 }
