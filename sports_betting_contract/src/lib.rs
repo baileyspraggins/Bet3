@@ -26,7 +26,8 @@ impl Default for BetStatus {
     }
 }
 
-#[derive(Default, BorshSerialize, BorshDeserialize, Debug)]
+#[derive(BorshDeserialize, BorshSerialize, Deserialize, Serialize, Debug)]
+#[serde(crate = "near_sdk::serde")]
 pub struct UserData {
     account: AccountId,
     deposited_amount: u128,
@@ -36,7 +37,8 @@ pub struct UserData {
 // Participant hash map has the account id and the amount wagering
 // 1st participant is the bet initializer
 // 2nd participant is the bet taker
-#[derive(Default, BorshSerialize, BorshDeserialize, Debug)]
+#[derive(BorshDeserialize, BorshSerialize, Deserialize, Serialize, Debug)]
+#[serde(crate = "near_sdk::serde")]
 pub struct Bet {
     bet_odds: i128,
     bet_amount: u128,
@@ -129,7 +131,7 @@ impl BettingContract {
             wager.participants[0].potential_winnings
         );
 
-        println!("Wager Id is {}", &wager_id);
+        println!("The wager Id is {}", &wager_id);
     }
 
     #[payable]
@@ -164,8 +166,9 @@ impl BettingContract {
             selected_wager.bet_result = BetStatus::InProgress;
 
             println!(
-                "{} deposited {} NEAR to win {}",
+                "{} accepted wager {} and deposited {} NEAR to win {}",
                 selected_wager.participants[1].account,
+                wager_id,
                 (selected_wager.participants[1].deposited_amount / ONE_NEAR),
                 selected_wager.participants[1].potential_winnings
             );
@@ -215,6 +218,12 @@ impl BettingContract {
         Promise::new(env::predecessor_account_id()).transfer(selected_wager.bet_amount);
         selected_wager.bet_result = BetStatus::Canceled;
         self.remove_from_active_wagers(&wager_id);
+        println!(
+            "{} canceled wager {} and has been refunded {} NEAR",
+            env::predecessor_account_id(),
+            &wager_id,
+            selected_wager.bet_amount
+        );
     }
 
     fn pay_winner(winner: &AccountId, amount: u128) {
@@ -240,12 +249,15 @@ impl BettingContract {
             panic!("Please enter a correct wager id");
         }
 
+        println!("Wager {}:", &wager_id);
+        println!("{:?}", &wager);
         wager
     }
 
     pub fn get_wager_status(&self, wager_id: String) -> BetStatus {
         let selected_wager = self.get_wager(&wager_id);
 
+        println!("Wager status: {:?}", &selected_wager.bet_result);
         selected_wager.bet_result
     }
 
@@ -258,6 +270,8 @@ impl BettingContract {
             all_active_wagers.push(wager);
         }
 
+        println!("Active Wagers are below:");
+        println!("{:?}", &all_active_wagers);
         all_active_wagers
     }
 }
