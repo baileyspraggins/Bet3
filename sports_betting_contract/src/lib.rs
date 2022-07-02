@@ -153,18 +153,23 @@ impl BettingContract {
             let backer: UserData = UserData {
                 account: env::signer_account_id(),
                 deposited_amount: env::attached_deposit(),
-                potential_winnings: selected_wager.get_potential_winnings(),
+                potential_winnings: selected_wager.bet_amount,
             };
 
-            if backer.deposited_amount
-                < (selected_wager.participants[0].potential_winnings
-                    - selected_wager.participants[0].deposited_amount)
-            {
+            assert_ne!(
+                selected_wager.participants[0].account, backer.account,
+                "You cannot back a bet you placed"
+            );
+
+            if backer.deposited_amount < selected_wager.participants[0].potential_winnings {
                 panic!("Please deposit more NEAR");
             }
 
             selected_wager.participants.push(backer);
+
             selected_wager.bet_result = BetStatus::InProgress;
+
+            self.wagers.insert(&wager_id, &selected_wager);
 
             log!(
                 "{} accepted wager {} and deposited {} NEAR to win {}",
@@ -203,6 +208,7 @@ impl BettingContract {
             _ => panic!("Please enter an integer of 1 or 2"),
         }
 
+        self.wagers.insert(&wager_id, &selected_wager);
         BettingContract::pay_winner(&winner_id, winner_reward);
         self.remove_from_active_wagers(&wager_id);
     }
@@ -218,7 +224,9 @@ impl BettingContract {
 
         Promise::new(env::predecessor_account_id()).transfer(selected_wager.bet_amount);
         selected_wager.bet_result = BetStatus::Canceled;
+        self.wagers.insert(&wager_id, &selected_wager);
         self.remove_from_active_wagers(&wager_id);
+
         log!(
             "{} canceled wager {} and has been refunded {} NEAR",
             env::predecessor_account_id(),
@@ -312,6 +320,38 @@ mod tests {
         }
     }
 
+    fn get_active_bet(odds: i128) -> BettingContract {
+        let mut contract = BettingContract {
+            owner_id: "sportsbettingcontract.testnet".to_string(),
+            wagers: LookupMap::new(b"c"),
+            active_wagers: UnorderedSet::new(b"a"),
+        };
+
+        let mut bet = Bet {
+            bet_odds: odds,
+            bet_amount: 5 * ONE_NEAR,
+            bet_result: BetStatus::Pending,
+            participants: Vec::new(),
+        };
+
+        let mut user1 = UserData {
+            account: "user1.testnet".to_string(),
+            deposited_amount: 5 * ONE_NEAR,
+            potential_winnings: 0,
+        };
+
+        user1.potential_winnings = bet.get_potential_winnings();
+
+        bet.participants.push(user1);
+
+        let id: String = String::from("ashyweq627jdna12");
+
+        contract.active_wagers.insert(&id);
+        contract.wagers.insert(&id, &bet);
+
+        contract
+    }
+
     // Tests
     #[test]
     fn place_bet_with_positive_odds() {
@@ -333,7 +373,7 @@ mod tests {
 
         assert_eq!(
             true, check_active_wagers,
-            "Expected an active wager length greater than 1"
+            "Expected an active wager length greater than 0"
         );
 
         assert_eq!(
@@ -381,7 +421,7 @@ mod tests {
 
         assert_eq!(
             true, check_active_wagers,
-            "Expected an active wager length greater than 1"
+            "Expected an active wager length greater than 0"
         );
 
         assert_eq!(
@@ -419,5 +459,134 @@ mod tests {
         let mut contract = get_initialized_bet();
 
         contract.place_bet(125);
+    }
+
+    #[test]
+    fn accept_bet_with_positive_odds() {
+        let user_id: AccountId = "user2.testnet".to_string();
+
+        let context = get_context(user_id, 20 * ONE_NEAR);
+        testing_env!(context);
+
+        let mut contract = get_active_bet(250);
+
+        let id = &contract.active_wagers.to_vec()[0];
+
+        contract.accept_bet(id.to_string());
+
+        let check_active_wagers = contract.active_wagers.len() == 1;
+
+        let bet = contract
+            .wagers
+            .get(&contract.active_wagers.to_vec()[0])
+            .unwrap();
+
+        println!("{:?}", bet.participants);
+
+        assert_eq!(
+            true, check_active_wagers,
+            "Expected length of active wager should be 1"
+        );
+
+        assert_eq!(
+            20 * ONE_NEAR,
+            bet.participants[1].deposited_amount,
+            "Expected a different deposit amount"
+        );
+
+        assert_eq!(
+            bet.bet_amount, bet.participants[1].potential_winnings,
+            "Expected value for potential winnings"
+        );
+
+        assert_ne!(
+            bet.participants[0].account, bet.participants[1].account,
+            "Expected bet participants to be different"
+        );
+
+        assert_eq!(
+            BetStatus::InProgress,
+            bet.bet_result,
+            "BetStutus should be InProgress"
+        );
+    }
+
+    #[test]
+    fn accept_bet_with_negative_odds() {
+        let user_id: AccountId = "user2.testnet".to_string();
+
+        let context = get_context(user_id, 5 * ONE_NEAR);
+        testing_env!(context);
+
+        let mut contract = get_active_bet(-150);
+
+        let id = &contract.active_wagers.to_vec()[0];
+
+        contract.accept_bet(id.to_string());
+
+        let check_active_wagers = contract.active_wagers.len() == 1;
+
+        let bet = contract
+            .wagers
+            .get(&contract.active_wagers.to_vec()[0])
+            .unwrap();
+
+        assert_eq!(
+            true, check_active_wagers,
+            "Expected an active wager length greater than 1"
+        );
+
+        assert_eq!(
+            5 * ONE_NEAR,
+            bet.participants[1].deposited_amount,
+            "Expected a different deposit amount"
+        );
+
+        assert_eq!(
+            bet.bet_amount, bet.participants[1].potential_winnings,
+            "Expected value for potential winnings"
+        );
+
+        assert_ne!(
+            bet.participants[0].account, bet.participants[1].account,
+            "Expected bet participants to be different"
+        );
+
+        assert_eq!(
+            BetStatus::InProgress,
+            bet.bet_result,
+            "BetStutus should be pending"
+        );
+    }
+
+    #[test]
+    #[should_panic(expected = "The creater of the contract cannot participate in the bet")]
+    fn contract_owner_accept_bet() {
+        let user_id: AccountId = "sportsbettingcontract.testnet".to_string();
+
+        let context = get_context(user_id, 5 * ONE_NEAR);
+        testing_env!(context);
+
+        let mut contract = get_active_bet(-150);
+
+        let id = &contract.active_wagers.to_vec()[0];
+
+        contract.accept_bet(id.to_string());
+    }
+
+    #[test]
+    fn add_additional_wager() {
+        let user_id: AccountId = "user2.testnet".to_string();
+
+        let context = get_context(user_id, 5 * ONE_NEAR);
+        testing_env!(context);
+
+        let mut contract = get_active_bet(150);
+
+        contract.place_bet(125);
+
+        let total_active_wagers = contract.active_wagers.to_vec().len();
+
+        assert_eq!(2, total_active_wagers, "Active wagers should equal 2");
     }
 }
