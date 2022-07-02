@@ -1,7 +1,7 @@
 use near_sdk::borsh::{self, BorshDeserialize, BorshSerialize};
 use near_sdk::collections::{LookupMap, UnorderedSet};
 use near_sdk::serde::{Deserialize, Serialize};
-use near_sdk::{env, near_bindgen, AccountId, PanicOnDefault, Promise};
+use near_sdk::{env, log, near_bindgen, AccountId, PanicOnDefault, Promise};
 use rand::distributions::Alphanumeric;
 use rand::Rng;
 
@@ -9,7 +9,7 @@ const ONE_NEAR: u128 = 1_000_000_000_000_000_000_000_000;
 
 // Describes the status of the bet.
 // Win or Lose describe the result of the user who initialized the bet
-#[derive(BorshDeserialize, BorshSerialize, Deserialize, Serialize, Debug)]
+#[derive(BorshDeserialize, BorshSerialize, Deserialize, Serialize, Debug, PartialEq, Eq)]
 #[serde(crate = "near_sdk::serde")]
 pub enum BetStatus {
     Initialized,
@@ -72,9 +72,9 @@ pub struct BettingContract {
 #[near_bindgen]
 impl BettingContract {
     #[init]
-    pub fn new(owner_id: AccountId) -> Self {
+    pub fn new() -> Self {
         Self {
-            owner_id,
+            owner_id: env::predecessor_account_id(),
             wagers: LookupMap::new(b"c"),
             active_wagers: UnorderedSet::new(b"a"),
         }
@@ -82,12 +82,11 @@ impl BettingContract {
 
     #[payable]
     pub fn place_bet(&mut self, wager_odds: i128) {
-        assert_eq!(
+        assert_ne!(
             env::predecessor_account_id(),
             self.owner_id,
             "The creater of the contract cannot participate in the bet"
         );
-
         fn generate_id() -> String {
             let id: String = rand::thread_rng()
                 .sample_iter(&Alphanumeric)
@@ -104,7 +103,7 @@ impl BettingContract {
             potential_winnings: 0,
         };
 
-        let wager: Bet = Bet {
+        let mut wager: Bet = Bet {
             bet_odds: wager_odds,
             bet_amount: user.deposited_amount,
             bet_result: BetStatus::Pending,
@@ -112,6 +111,8 @@ impl BettingContract {
         };
 
         user.potential_winnings = wager.get_potential_winnings();
+
+        wager.participants.push(user);
 
         let wager_id = generate_id();
 
@@ -136,7 +137,7 @@ impl BettingContract {
 
     #[payable]
     pub fn accept_bet(&mut self, wager_id: String) {
-        assert_eq!(
+        assert_ne!(
             env::predecessor_account_id(),
             self.owner_id,
             "The creater of the contract cannot participate in the bet"
@@ -273,5 +274,90 @@ impl BettingContract {
         println!("Active Wagers are below:");
         println!("{:?}", &all_active_wagers);
         all_active_wagers
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use near_sdk::MockedBlockchain;
+    use near_sdk::{testing_env, VMContext};
+
+    fn get_context(predecessor_account_id: String, attached_deposit: u128) -> VMContext {
+        VMContext {
+            current_account_id: "sportsbettingcontract.testnet".to_string(),
+            signer_account_id: predecessor_account_id.clone(),
+            signer_account_pk: vec![0, 1, 2],
+            predecessor_account_id,
+            input: vec![],
+            block_index: 0,
+            block_timestamp: 0,
+            account_balance: 0,
+            account_locked_balance: 0,
+            storage_usage: 0,
+            attached_deposit,
+            prepaid_gas: 10u64.pow(18),
+            random_seed: vec![0, 1, 2],
+            is_view: false,
+            output_data_receivers: vec![],
+            epoch_height: 19,
+        }
+    }
+
+    fn get_initialized_bet() -> BettingContract {
+        BettingContract {
+            owner_id: "sportsbettingcontract.testnet".to_string(),
+            wagers: LookupMap::new(b"c"),
+            active_wagers: UnorderedSet::new(b"a"),
+        }
+    }
+
+    // Tests
+    #[test]
+    fn place_bet_with_positive_odds() {
+        let user_id: AccountId = "user1.testnet".to_string();
+
+        let context = get_context(user_id, 5 * ONE_NEAR);
+        testing_env!(context);
+
+        let mut contract = get_initialized_bet();
+        println!("code reaches part 1");
+        contract.place_bet(150);
+        println!("code reaches part 2");
+        let check_active_wagers = contract.active_wagers.len() > 0;
+        println!("code reaches part 3");
+        let new_bet = contract
+            .wagers
+            .get(&contract.active_wagers.to_vec()[0])
+            .unwrap();
+
+        assert_eq!(
+            true, check_active_wagers,
+            "Expected an active wager length greater than 1"
+        );
+
+        assert_eq!(
+            5 * ONE_NEAR,
+            new_bet.bet_amount,
+            "Expected a different bet amount"
+        );
+
+        assert_eq!(
+            5 * ONE_NEAR,
+            new_bet.participants[0].deposited_amount,
+            "Expected a different deposit amount"
+        );
+
+        assert_eq!(
+            75 * ONE_NEAR / 10,
+            new_bet.participants[0].potential_winnings,
+            "Expected value for potential winnings"
+        );
+
+        assert_eq!(
+            BetStatus::Pending,
+            new_bet.bet_result,
+            "BetStutus should be pending"
+        );
     }
 }
