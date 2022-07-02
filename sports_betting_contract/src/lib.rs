@@ -125,14 +125,14 @@ impl BettingContract {
 
         self.active_wagers.insert(&wager_id);
 
-        println!(
+        log!(
             "{} placed a bet and deposited {} NEAR to win {}",
             wager.participants[0].account,
             (wager.participants[0].deposited_amount / ONE_NEAR),
-            wager.participants[0].potential_winnings
+            wager.participants[0].potential_winnings / ONE_NEAR
         );
 
-        println!("The wager Id is {}", &wager_id);
+        log!("The wager Id is {}", &wager_id);
     }
 
     #[payable]
@@ -166,12 +166,12 @@ impl BettingContract {
             selected_wager.participants.push(backer);
             selected_wager.bet_result = BetStatus::InProgress;
 
-            println!(
+            log!(
                 "{} accepted wager {} and deposited {} NEAR to win {}",
                 selected_wager.participants[1].account,
                 wager_id,
                 (selected_wager.participants[1].deposited_amount / ONE_NEAR),
-                selected_wager.participants[1].potential_winnings
+                selected_wager.participants[1].potential_winnings / ONE_NEAR
             );
         }
     }
@@ -219,17 +219,17 @@ impl BettingContract {
         Promise::new(env::predecessor_account_id()).transfer(selected_wager.bet_amount);
         selected_wager.bet_result = BetStatus::Canceled;
         self.remove_from_active_wagers(&wager_id);
-        println!(
+        log!(
             "{} canceled wager {} and has been refunded {} NEAR",
             env::predecessor_account_id(),
             &wager_id,
-            selected_wager.bet_amount
+            selected_wager.bet_amount / ONE_NEAR
         );
     }
 
     fn pay_winner(winner: &AccountId, amount: u128) {
         Promise::new(winner.to_string()).transfer(amount);
-        println!(
+        log!(
             "{} received won the bet and has received {} NEAR",
             winner,
             (amount / ONE_NEAR)
@@ -250,15 +250,15 @@ impl BettingContract {
             panic!("Please enter a correct wager id");
         }
 
-        println!("Wager {}:", &wager_id);
-        println!("{:?}", &wager);
+        log!("Wager {}:", &wager_id);
+        log!("{:?}", &wager);
         wager
     }
 
     pub fn get_wager_status(&self, wager_id: String) -> BetStatus {
         let selected_wager = self.get_wager(&wager_id);
 
-        println!("Wager status: {:?}", &selected_wager.bet_result);
+        log!("Wager status: {:?}", &selected_wager.bet_result);
         selected_wager.bet_result
     }
 
@@ -271,8 +271,8 @@ impl BettingContract {
             all_active_wagers.push(wager);
         }
 
-        println!("Active Wagers are below:");
-        println!("{:?}", &all_active_wagers);
+        log!("Active Wagers are below:");
+        log!("{:?}", &all_active_wagers);
         all_active_wagers
     }
 }
@@ -321,11 +321,11 @@ mod tests {
         testing_env!(context);
 
         let mut contract = get_initialized_bet();
-        println!("code reaches part 1");
+
         contract.place_bet(150);
-        println!("code reaches part 2");
+
         let check_active_wagers = contract.active_wagers.len() > 0;
-        println!("code reaches part 3");
+
         let new_bet = contract
             .wagers
             .get(&contract.active_wagers.to_vec()[0])
