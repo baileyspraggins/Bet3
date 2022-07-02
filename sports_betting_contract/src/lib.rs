@@ -248,4 +248,16 @@ impl BettingContract {
 
         selected_wager.bet_result
     }
+
+    pub fn get_active_wagers(&self) -> Vec<Bet> {
+        let wager_ids = self.active_wagers.to_vec();
+        let mut all_active_wagers = vec![];
+
+        for id in wager_ids {
+            let wager = self.wagers.get(&id).unwrap();
+            all_active_wagers.push(wager);
+        }
+
+        all_active_wagers
+    }
 }
