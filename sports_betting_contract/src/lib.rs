@@ -79,6 +79,12 @@ impl BettingContract {
 
     #[payable]
     pub fn place_bet(&mut self, wager_odds: i128) {
+        assert_eq!(
+            env::predecessor_account_id(),
+            self.owner_id,
+            "The creater of the contract cannot participate in the bet"
+        );
+
         fn generate_id() -> String {
             let id: String = rand::thread_rng()
                 .sample_iter(&Alphanumeric)
@@ -127,6 +133,12 @@ impl BettingContract {
 
     #[payable]
     pub fn accept_bet(&mut self, wager_id: String) {
+        assert_eq!(
+            env::predecessor_account_id(),
+            self.owner_id,
+            "The creater of the contract cannot participate in the bet"
+        );
+
         let mut selected_wager = self.get_wager(wager_id);
 
         if selected_wager.participants.len() < 1 {
