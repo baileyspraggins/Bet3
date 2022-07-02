@@ -43,6 +43,21 @@ pub struct Bet {
     participants: Vec<UserData>,
 }
 
+impl Bet {
+    fn get_potential_winnings(&self) -> u128 {
+        let amount;
+
+        if self.bet_odds < 0 {
+            let signed_odds: u128 = (self.bet_odds + (self.bet_odds * -2)) as u128;
+            amount = (100 * self.bet_amount) / signed_odds as u128;
+        } else {
+            amount = (self.bet_amount * self.bet_odds as u128) / 100;
+        }
+
+        amount
+    }
+}
+
 #[near_bindgen]
 #[derive(BorshSerialize, BorshDeserialize, PanicOnDefault)]
 pub struct BettingContract {
@@ -74,10 +89,10 @@ impl BettingContract {
             id
         }
 
-        let user: UserData = UserData {
+        let mut user: UserData = UserData {
             account: env::signer_account_id(),
             deposited_amount: env::attached_deposit(),
-            potential_winnings: self.get_potential_winnings(),
+            potential_winnings: 0,
         };
 
         let wager: Bet = Bet {
@@ -86,6 +101,8 @@ impl BettingContract {
             bet_result: BetStatus::Pending,
             participants: Vec::new(),
         };
+
+        user.potential_winnings = wager.get_potential_winnings();
 
         let wager_id = generate_id();
 
@@ -110,7 +127,7 @@ impl BettingContract {
 
     #[payable]
     pub fn accept_bet(&mut self, wager_id: String) {
-        let selected_wager = self.get_wager(wager_id);
+        let mut selected_wager = self.get_wager(wager_id);
 
         if selected_wager.participants.len() < 1 {
             panic!("This wager has yet to be initialized");
@@ -120,7 +137,7 @@ impl BettingContract {
             let backer: UserData = UserData {
                 account: env::signer_account_id(),
                 deposited_amount: env::attached_deposit(),
-                potential_winnings: self.get_potential_winnings(),
+                potential_winnings: selected_wager.get_potential_winnings(),
             };
 
             if backer.deposited_amount
@@ -143,29 +160,33 @@ impl BettingContract {
     }
 
     pub fn set_winner(&mut self, wager_id: String, winner: u8) {
-        let selected_wager = self.get_wager(wager_id);
+        assert_eq!(
+            env::predecessor_account_id(),
+            self.owner_id,
+            "Only the owner of this contract can set the winner of the bet it"
+        );
+
+        let mut selected_wager = self.get_wager(wager_id);
         let winner_id: AccountId;
         let winner_reward: u128;
 
         match winner {
             1 => {
-                self.bet_result = BetStatus::Win;
-                winner_id = self.participants[0].account.clone();
-                winner_reward =
-                    self.participants[0].potential_winnings + self.participants[0].deposited_amount;
-                // Pay the winner with the respective bet amount.
-                Bet::pay_winner(&winner_id, winner_reward);
+                selected_wager.bet_result = BetStatus::Win;
+                winner_id = selected_wager.participants[0].account.clone();
+                winner_reward = selected_wager.participants[0].potential_winnings
+                    + selected_wager.participants[0].deposited_amount;
             }
             2 => {
-                self.bet_result = BetStatus::Lose;
-                winner_id = self.participants[1].account.clone();
-                winner_reward =
-                    self.participants[1].potential_winnings + self.participants[1].deposited_amount;
-                // Pay the winner with the respective bet amount.
-                Bet::pay_winner(&winner_id, winner_reward);
+                selected_wager.bet_result = BetStatus::Lose;
+                winner_id = selected_wager.participants[1].account.clone();
+                winner_reward = selected_wager.participants[1].potential_winnings
+                    + selected_wager.participants[1].deposited_amount;
             }
             _ => panic!("Please enter an integer of 1 or 2"),
         }
+
+        BettingContract::pay_winner(&winner_id, winner_reward);
     }
 
     fn pay_winner(winner: &AccountId, amount: u128) {
@@ -177,28 +198,22 @@ impl BettingContract {
         )
     }
 
-    fn get_potential_winnings(&self) -> u128 {
-        let amount;
-
-        if self.bet_odds < 0 {
-            let signed_odds: u128 = (self.bet_odds + (self.bet_odds * -2)) as u128;
-            amount = (100 * self.bet_amount) / signed_odds as u128;
-        } else {
-            amount = (self.bet_amount * self.bet_odds as u128) / 100;
-        }
-
-        amount
-    }
-
+    // View Functions
     pub fn get_wager(&self, wager_id: String) -> Bet {
         let wager: Bet;
 
         if self.wagers.contains_key(&wager_id) {
-            wager = self.wager.get(&wager_id);
+            wager = self.wagers.get(&wager_id).unwrap();
         } else {
             panic!("Please enter a correct wager id");
         }
 
         wager
+    }
+
+    pub fn get_wager_status(&self, wager_id: String) -> BetStatus {
+        let selected_wager = self.get_wager(wager_id);
+
+        selected_wager.bet_result
     }
 }
