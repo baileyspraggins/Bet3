@@ -2,8 +2,6 @@ use near_sdk::borsh::{self, BorshDeserialize, BorshSerialize};
 use near_sdk::collections::{LookupMap, UnorderedSet};
 use near_sdk::serde::{Deserialize, Serialize};
 use near_sdk::{env, log, near_bindgen, AccountId, PanicOnDefault, Promise};
-use rand::distributions::Alphanumeric;
-use rand::Rng;
 
 const ONE_NEAR: u128 = 1_000_000_000_000_000_000_000_000;
 
@@ -87,15 +85,6 @@ impl BettingContract {
             self.owner_id,
             "The creater of the contract cannot participate in the bet"
         );
-        fn generate_id() -> String {
-            let id: String = rand::thread_rng()
-                .sample_iter(&Alphanumeric)
-                .take(16)
-                .map(char::from)
-                .collect();
-
-            id
-        }
 
         let mut user: UserData = UserData {
             account: env::signer_account_id(),
@@ -114,7 +103,7 @@ impl BettingContract {
 
         wager.participants.push(user);
 
-        let wager_id = generate_id();
+        let wager_id = (self.wagers.try_to_vec().iter().len() + 1).to_string();
 
         let existing_wager = self.wagers.insert(&wager_id, &wager);
 
