@@ -5,27 +5,36 @@ import TestWager from './Components/TestWager';
 //import './App.css';
 
 function App({contract, walletConnection, currentUser }) {
-  
+
   const signIn = () => {
     walletConnection.requestSignIn(
-      "sportsbetting.testnet",
+      "sportsbettingcontract.testnet",
       "NEAR Sports Betting",
       null,
       null // contract requesting access
     );
-    console.log("button clicked")
   };
 
   const signOut = () => {
     walletConnection.signOut();
     window.location.replace(window.location.origin + window.location.pathname);
-    console.log("button clicked");
   };
+
+  const getActiveWagers = async () => {
+    const response = await contract.get_active_wagers();
+
+    console.log(response);
+    
+  }
 
   return (
     <div className="app-contnet">
       <Header />
-      <TestWager />
+      <TestWager 
+        contract={contract}
+        walletConnection={walletConnection}
+        currentUser={currentUser}
+      />
       { currentUser
           ? <div>
               <h3>
@@ -39,13 +48,18 @@ function App({contract, walletConnection, currentUser }) {
             </div>
           : 
           <div>
-            Sign In To Use The App: 
+            Sign In To Use The App:
             {" "}
             <button onClick={signIn}>Log in</button>
           </div>
         }
+        <div className='activeWagers'>
+          <button onClick={getActiveWagers}>Show Active Wagers</button>
+        </div>
+
         <div className='selectWinner'>
           <h1>Select Winner</h1>
+          
         </div>
     </div>
   );

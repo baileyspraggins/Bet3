@@ -30,10 +30,10 @@ async function initSportsBetting() {
     };
   }
 
-  const contract = await new nearAPI.Contract(walletConnection.account(), "sportsbetting.testnet", {
-    viewMethods: [],
-    changeMethods: ["new_contract", "place_bet", "accept_bet", "set_winner"],
-    sender: walletConnection.getAccountId()
+  const contract = await new nearAPI.Contract(walletConnection.account(), "sportsbettingcontract.testnet", {
+    viewMethods: ["get_wager","get_wager_status","get_active_wagers"],
+    changeMethods: ["new", "place_bet", "accept_bet", "set_winner", "cancel_wager"],
+    sender: walletConnection.account()
   });
 
   return {contract, walletConnection, currentUser};

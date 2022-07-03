@@ -105,12 +105,7 @@ impl BettingContract {
 
         let wager_id = (self.wagers.try_to_vec().iter().len() + 1).to_string();
 
-        let existing_wager = self.wagers.insert(&wager_id, &wager);
-
-        assert!(
-            existing_wager.is_none(),
-            "Wager with this id already exists"
-        );
+        self.wagers.insert(&wager_id, &wager);
 
         self.active_wagers.insert(&wager_id);
 
