@@ -1,0 +1,20 @@
+#modal-header {
+    text-align: center;
+    align-items: center;
+    border-color: white;
+}
+
+#modal-body {
+    text-align: center;
+}
+
+#modal-buttons {
+    text-align: center;
+    align-items: center;
+    border-color: white;
+}
+
+.betModal {
+    border-color: black;
+    border-width: 2px;
+}

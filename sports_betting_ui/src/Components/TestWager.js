@@ -25,7 +25,7 @@ const TestWager = ({contract, WalletConnection, currentUser}) => {
 
     const mockBet = {
         teamOne: "Tampa Bay Lightning",
-        teamOneOdds: 150,
+        teamOneOdds: 125,
         teamOneLogo: '',
         teamTwo: "Colorado Avalanche",
         teamTwoOdds: -150,
@@ -61,44 +61,47 @@ const TestWager = ({contract, WalletConnection, currentUser}) => {
 
 
     return (
-        <div className='container'>
-            <h1>Smart Contract Betting</h1> 
-            <Table border={3}>
-                <thead>
-                    <tr>
-                        <td>Date</td>
-                        <td>Sport</td>
-                        <td>Matchup</td>
-                        <td></td>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>
-                            <p>{mockBet.date}</p>
-                            <p>{mockBet.time}</p>
-                        </td>
-                        <td>{mockBet.sport}</td>
-                        <td>
-                            <p>{mockBet.teamOne} {mockBet.teamOneOdds}</p>
-                            <p>{mockBet.teamTwo} {mockBet.teamTwoOdds}</p>
-                        </td>
-                        <td>
-                            <button onClick={() => { 
-                                getSelectedData(1)
-                                console.log(selectedData)
-                                handleShow()
-                                }}>Place Bet</button>
-                            <br/>
-                            <br />
-                            <button onClick={() => { 
-                                getSelectedData(2)
-                                handleShow()
-                                }}>Place Bet</button>
-                        </td>
-                    </tr>
-                </tbody>
-            </Table>
+        <div>
+            <div className='container'>
+                <h1>Smart Contract Betting</h1> 
+                <Table border={3}>
+                    <thead>
+                        <tr>
+                            <td>Date</td>
+                            <td>Sport</td>
+                            <td>Matchup</td>
+                            <td></td>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>
+                                <p>{mockBet.date}</p>
+                                <p>{mockBet.time}</p>
+                            </td>
+                            <td>{mockBet.sport}</td>
+                            <td>
+                                <p>{mockBet.teamOne} {mockBet.teamOneOdds}</p>
+                                <p>{mockBet.teamTwo} {mockBet.teamTwoOdds}</p>
+                            </td>
+                            <td>
+                                <button onClick={() => { 
+                                    getSelectedData(1)
+                                    handleShow()
+                                    console.log(selectedData)
+                                    }}>Place Bet</button>
+                                <br/>
+                                <br />
+                                <button onClick={() => { 
+                                    getSelectedData(2)
+                                    handleShow()
+                                    console.log(selectedData)
+                                    }}>Place Bet</button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </Table>
+            </div>
             <div>
                 <MakeWagerModal contract={contract} show={show} handleClose={handleClose} betData={selectedData} />
             </div>

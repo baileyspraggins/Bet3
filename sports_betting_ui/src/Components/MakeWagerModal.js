@@ -1,11 +1,12 @@
 import {React, useState} from "react";
-import { Modal, ModalHeader } from "react-bootstrap";
+import { Form, Modal, Row} from "react-bootstrap";
+import './MakeWagerModal.css';
 
 const MakeWagerModal = ({contract, show, handleClose, betData}) => {
 
-    // const [wagerOdds, setWagerOdds] = useState(betData.odds);
+    const [betAmount, setBetAmount] = useState(1);
 
-    const betAmount = '';
+    const ONE_NEAR = 1
 
     const initBet = async (bettingOdds, betAmount) => {
         // Call the place_bet method with a i128 arg, and an attachedDeposit in NEAR.
@@ -14,7 +15,7 @@ const MakeWagerModal = ({contract, show, handleClose, betData}) => {
                 wager_odds: bettingOdds,
             },
             "3000000000000", // Optional GAS Amount
-            betAmount 
+            String(betAmount * ONE_NEAR)
         );
     }
 
@@ -32,21 +33,26 @@ const MakeWagerModal = ({contract, show, handleClose, betData}) => {
     };
 
     return (
-        <div>
-            <Modal show={show} onHide={handleClose} centered className="BetModal">
-                <Modal.Header id="modalHeader" closeButton>
-                </Modal.Header>
-                <Modal.Body id="modalBody">
-                    <h3>Confirm Bet</h3>
-                    <h5>{betData.team | betData.odds}</h5>
-                    <h6>{betData.date} - {betData.time}</h6>
-                    <input id="betAmount">{betAmount}</input>
-                    <label for="betAmouint">Bet Amount in NEAR: </label>
-                    <h6>{betAmount} to win {() => {getPotentialwinnings(betData.odds, betAmount)}}</h6>
-                    <button onClick={() => {initBet(betData.odds, betAmount)}}></button>
-                </Modal.Body>
-            </Modal>
-        </div>
+        <Modal show={show} onHide={handleClose} centered className="betModal">
+            <Modal.Header id="modal-header">
+                <h2>{betData.team} | {betData.odds}</h2>
+                <h4>{betData.date} - {betData.time}</h4>
+            </Modal.Header>
+            <Modal.Body id="modal-body">
+                <Row>
+                    <Form>
+                        <Form.Group>
+                            <Form.Label>Bet Amount in NEAR:</Form.Label>{' '}
+                            <Form.Control type="number" placeholder="1" onChange={(e) => {setBetAmount(Number(e.target.value))}}/>
+                        </Form.Group>
+                    </Form>
+                </Row>
+                <Row>
+                    <h3>Bet {betAmount} NEAR to win {getPotentialwinnings(betData.odds, betAmount)}</h3>
+                </Row>
+                <button>Confirm Bet</button>
+            </Modal.Body>
+        </Modal>
     )
 }
 

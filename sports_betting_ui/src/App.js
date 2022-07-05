@@ -56,11 +56,6 @@ function App({contract, walletConnection, currentUser }) {
         <div className='activeWagers'>
           <button onClick={getActiveWagers}>Show Active Wagers</button>
         </div>
-
-        <div className='selectWinner'>
-          <h1>Select Winner</h1>
-          
-        </div>
     </div>
   );
 }
