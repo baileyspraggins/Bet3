@@ -1,70 +1,50 @@
-# Getting Started with Create React App
+# Sports Betting Application Front-End
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+    User interface for interacting with the Bet3 Sports Betting Contract on the NEAR Protocol.
 
-## Available Scripts
+## Features
 
-In the project directory, you can run:
+    - Runs on NEAR Protocol Testnet
+    - Access to NEAR Protocol Wallets
+        - Create, Import, Login
+    - Place a bet on one of two teams in the current featured wager
+    - View a list of open wagers
+    - Back one of the open wagers
+    - Cancel a pending bet
+    - If you have deployed the contract you can set the winner
 
-### `npm start`
+## Future Features
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+    - View a list of current active wagers associated with your accountId
+    - Multiple games and sports to bet on
+    - API implementation to get changing odds data
+    - Winner is set by an API at the end of each game
+    - Implementation on Mainnet
+    - Market or Spot bets when placing the initial wager
+    - Ability to interact with the contract deployed on other accounts
+    - Ability to deploy the contract to your own account
+    - Algorithm that matches bets if a two users select market bets for two different teams in a matchup at the same price
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+    - Improved UI/UX
 
-### `npm test`
+## How to use
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+    1. To run the application open your terminal to the root of the sports_betting_ui folder
+        and enter ```npm run start```. Navagate to http://localhost:3000 in your browser.
 
-### `npm run build`
+    2. Login/Create a NEAR Wallet using the login button.
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+    3. If you want to place a bet navigate to the current wager and click the place bet button that is to the right of the team you would like to bet on.
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+    4. If you want to back someone elses wager. There will be a list of pending wagers waiting bet. Select the back this bet button to wager against that user.
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+    5. If you depoyed this contract you can select and submit the winner which will pay out all users to made a winning wager.
 
-### `npm run eject`
+## Languages and Frameworks Used
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
-
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
-
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+    - Javascript
+    - HTML
+    - CSS
+    - React.JS
+    - Bootstrap
+    - Near API JS

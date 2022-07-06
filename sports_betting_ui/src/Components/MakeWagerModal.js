@@ -1,21 +1,22 @@
 import {React, useState} from "react";
 import { Form, Modal, Row} from "react-bootstrap";
 import './MakeWagerModal.css';
+import { utils } from "near-api-js";
 
 const MakeWagerModal = ({contract, show, handleClose, betData}) => {
 
     const [betAmount, setBetAmount] = useState(1);
 
-    const ONE_NEAR = 1
+    let betAmountInYecto = utils.format.parseNearAmount(String(betAmount));
 
-    const initBet = async (bettingOdds, betAmount) => {
+    const initBet = async (bettingOdds, yectoBetAmount) => {
         // Call the place_bet method with a i128 arg, and an attachedDeposit in NEAR.
         await contract.place_bet(
             {
                 wager_odds: bettingOdds,
             },
             "3000000000000", // Optional GAS Amount
-            String(betAmount * ONE_NEAR)
+            yectoBetAmount
         );
     }
 
@@ -50,7 +51,7 @@ const MakeWagerModal = ({contract, show, handleClose, betData}) => {
                 <Row>
                     <h3>Bet {betAmount} NEAR to win {getPotentialwinnings(betData.odds, betAmount)}</h3>
                 </Row>
-                <button>Confirm Bet</button>
+                <button onClick={() => initBet(betData.odds, betAmountInYecto)}>Confirm Bet</button>
             </Modal.Body>
         </Modal>
     )
