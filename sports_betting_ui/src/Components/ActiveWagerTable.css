@@ -1,0 +1,17 @@
+#active-table {
+    width: 100%;
+    max-width: 750px;
+    border-collapse: collapse;
+    border: 3px solid #1a70ec;
+    margin: 50px auto;
+    background: white;
+}
+
+#active-header {
+    background: #000000;
+    font-weight: lighter;
+    text-shadow: 0 1px 0 #38678f;
+    color: white;
+    border: 1px solid #38678f;
+    box-shadow: inset 0px 1px 2px 
+}

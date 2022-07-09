@@ -64,7 +64,7 @@ const TestWager = ({contract, WalletConnection, currentUser}) => {
         <div>
             <div className='container'>
                 <h1>Smart Contract Betting</h1> 
-                <Table border={3}>
+                <Table border={3} id="wager-table">
                     <thead>
                         <tr>
                             <td>Date</td>

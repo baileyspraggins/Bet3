@@ -1,8 +1,8 @@
 import * as nearAPI from 'near-api-js';
 import Header from './Components/Header';
 import TestWager from './Components/TestWager';
+import ActiveWagersTable from './Components/ActiveWagersTable';
 
-//import './App.css';
 
 function App({contract, walletConnection, currentUser }) {
 
@@ -19,14 +19,7 @@ function App({contract, walletConnection, currentUser }) {
     walletConnection.signOut();
     window.location.replace(window.location.origin + window.location.pathname);
   };
-
-  const getActiveWagers = async () => {
-    const response = await contract.get_active_wagers();
-
-    console.log(response);
-    
-  }
-
+  
   return (
     <div className="app-contnet">
       <Header />
@@ -53,9 +46,10 @@ function App({contract, walletConnection, currentUser }) {
             <button onClick={signIn}>Log in</button>
           </div>
         }
-        <div className='activeWagers'>
-          <button onClick={getActiveWagers}>Show Active Wagers</button>
-        </div>
+      <ActiveWagersTable 
+                  contract={contract}
+                  walletConnection={walletConnection}
+                  currentUser={currentUser} />
     </div>
   );
 }

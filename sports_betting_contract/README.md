@@ -40,3 +40,9 @@
 
     - Rust
     - near_sdk
+
+###### Immeditate Edits
+
+- Add Team Id option to wager? or maybe a front end feature
+- Add ability to view and store wagrer ids
+- Find out why I cannot add multiple wagers anymore.
