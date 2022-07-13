@@ -7,7 +7,7 @@ const ActiveWagersTable = ({contract, walletConnection, currentUser }) => {
     
     const ONE_NEAR = 1000000000000000000000000;
 
-    const BET3_FEE = 250000000000000000000000;
+    // const BET3_FEE = 250000000000000000000000;
 
     const [activeWagers, setActiveWagers] = useState([]);
 

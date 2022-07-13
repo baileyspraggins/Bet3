@@ -5,7 +5,7 @@ use near_sdk::{env, log, near_bindgen, AccountId, PanicOnDefault, Promise};
 use std::str;
 
 const ONE_NEAR: u128 = 1_000_000_000_000_000_000_000_000;
-// const BET3_FEE: u128 = 250_000_000_000_000_000_000_000;
+const BET3_FEE: u128 = 250_000_000_000_000_000_000_000;
 
 // Describes the status of the bet.
 // Win or Lose describe the result of the user who initialized the bet
@@ -92,11 +92,11 @@ impl BettingContract {
 
         let deposit: u128 = env::attached_deposit();
 
-        let deposit_minute_fees: u128 = deposit;
+        let deposit_minus_fees: u128 = deposit - BET3_FEE;
 
         let mut user: UserData = UserData {
             account: env::signer_account_id(),
-            deposited_amount: env::attached_deposit(),
+            deposited_amount: deposit_minus_fees,
             potential_winnings: 0,
         };
 
@@ -147,6 +147,10 @@ impl BettingContract {
 
         let mut selected_wager = self.get_wager(&wager_id);
 
+        let deposit: u128 = env::attached_deposit();
+
+        let deposit_minus_fees: u128 = deposit - BET3_FEE;
+
         if selected_wager.participants.len() < 1 {
             panic!("This wager has yet to be initialized");
         } else if selected_wager.participants.len() > 1 {
@@ -154,7 +158,7 @@ impl BettingContract {
         } else {
             let backer: UserData = UserData {
                 account: env::signer_account_id(),
-                deposited_amount: env::attached_deposit(),
+                deposited_amount: deposit_minus_fees,
                 potential_winnings: selected_wager.bet_amount,
             };
 

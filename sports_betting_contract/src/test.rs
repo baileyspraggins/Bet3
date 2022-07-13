@@ -2,6 +2,8 @@ use super::*;
 use near_sdk::MockedBlockchain;
 use near_sdk::{testing_env, VMContext};
 
+const BET3_FEE: u128 = 250_000_000_000_000_000_000_000;
+
 fn get_context(predecessor_account_id: String, attached_deposit: u128) -> VMContext {
     VMContext {
         current_account_id: String::from("sportsbettingcontract.testnet"),
@@ -68,7 +70,7 @@ fn get_active_bet(odds: i128) -> BettingContract {
 fn place_bet_with_positive_odds() {
     let user_id: AccountId = String::from("user1.testnet");
 
-    let context = get_context(user_id, 5 * ONE_NEAR);
+    let context = get_context(user_id, 5 * ONE_NEAR + BET3_FEE);
     testing_env!(context);
 
     let mut contract = get_initialized_bet();
@@ -116,7 +118,7 @@ fn place_bet_with_positive_odds() {
 fn place_bet_with_negative_odds() {
     let user_id: AccountId = String::from("user1.testnet");
 
-    let context = get_context(user_id, 5 * ONE_NEAR);
+    let context = get_context(user_id, 5 * ONE_NEAR + BET3_FEE);
     testing_env!(context);
 
     let mut contract = get_initialized_bet();
@@ -164,7 +166,7 @@ fn place_bet_with_negative_odds() {
 fn contract_owner_place_bet() {
     let user_id: AccountId = String::from("sportsbettingcontract.testnet");
 
-    let context = get_context(user_id, 5 * ONE_NEAR);
+    let context = get_context(user_id, 5 * ONE_NEAR + BET3_FEE);
     testing_env!(context);
 
     let mut contract = get_initialized_bet();
@@ -176,7 +178,7 @@ fn contract_owner_place_bet() {
 fn accept_bet_with_positive_odds() {
     let user_id: AccountId = String::from("user2.testnet");
 
-    let context = get_context(user_id, 20 * ONE_NEAR);
+    let context = get_context(user_id, 20 * ONE_NEAR + BET3_FEE);
     testing_env!(context);
 
     let mut contract = get_active_bet(250);
@@ -226,7 +228,7 @@ fn accept_bet_with_positive_odds() {
 fn accept_bet_with_negative_odds() {
     let user_id: AccountId = String::from("user2.testnet");
 
-    let context = get_context(user_id, 5 * ONE_NEAR);
+    let context = get_context(user_id, 5 * ONE_NEAR + BET3_FEE);
     testing_env!(context);
 
     let mut contract = get_active_bet(-150);
