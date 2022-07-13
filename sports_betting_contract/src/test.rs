@@ -68,7 +68,7 @@ fn get_active_bet(odds: i128) -> BettingContract {
 fn place_bet_with_positive_odds() {
     let user_id: AccountId = String::from("user1.testnet");
 
-    let context = get_context(user_id, 5 * ONE_NEAR + BET3_FEE);
+    let context = get_context(user_id, 5 * ONE_NEAR);
     testing_env!(context);
 
     let mut contract = get_initialized_bet();
@@ -116,7 +116,7 @@ fn place_bet_with_positive_odds() {
 fn place_bet_with_negative_odds() {
     let user_id: AccountId = String::from("user1.testnet");
 
-    let context = get_context(user_id, 5 * ONE_NEAR + BET3_FEE);
+    let context = get_context(user_id, 5 * ONE_NEAR);
     testing_env!(context);
 
     let mut contract = get_initialized_bet();

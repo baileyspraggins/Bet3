@@ -73,7 +73,7 @@ const ActiveWagersTable = ({contract, walletConnection, currentUser }) => {
             } else {
                 const depositNum = wager.participants[0].potential_winnings  + BET3_FEE;
                 const necessaryDeposit = toFixed(depositNum);
-                console.log(necessaryDeposit);
+
                 return (
                     <div>
                         <Button onClick={() => {AcceptWager(wager.bet_id, necessaryDeposit)}}>Back Bet</Button>
@@ -133,7 +133,7 @@ const ActiveWagersTable = ({contract, walletConnection, currentUser }) => {
                     return (
                         <tr>
                             <td>{wager.bet_id}</td>
-                            <td>Colorado Avalanche</td>
+                            <td>{wager.bet_memo}</td>
                             <td>{wager.participants[0].account}</td>
                             <td>{`${wager.bet_amount / ONE_NEAR} NEAR`}</td>
                             <td>{wager.bet_odds}</td>

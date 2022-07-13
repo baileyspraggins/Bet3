@@ -5,7 +5,7 @@ use near_sdk::{env, log, near_bindgen, AccountId, PanicOnDefault, Promise};
 use std::str;
 
 const ONE_NEAR: u128 = 1_000_000_000_000_000_000_000_000;
-const BET3_FEE: u128 = 250_000_000_000_000_000_000_000;
+// const BET3_FEE: u128 = 250_000_000_000_000_000_000_000;
 
 // Describes the status of the bet.
 // Win or Lose describe the result of the user who initialized the bet
@@ -90,9 +90,13 @@ impl BettingContract {
             "The creater of the contract cannot participate in the bet"
         );
 
+        let deposit: u128 = env::attached_deposit();
+
+        let deposit_minute_fees: u128 = deposit;
+
         let mut user: UserData = UserData {
             account: env::signer_account_id(),
-            deposited_amount: env::attached_deposit() - BET3_FEE,
+            deposited_amount: env::attached_deposit(),
             potential_winnings: 0,
         };
 

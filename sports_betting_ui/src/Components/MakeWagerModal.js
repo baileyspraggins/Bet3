@@ -6,17 +6,21 @@ import { utils } from "near-api-js";
 const MakeWagerModal = ({contract, show, handleClose, betData}) => {
 
     const [betAmount, setBetAmount] = useState(1);
+    const BET3_FEE_NEAR = .25;
 
-    let betAmountInYecto = utils.format.parseNearAmount(String(betAmount));
+    const initBet = async (bettingOdds, nearBetAmount, team) => {
 
-    const initBet = async (bettingOdds, yectoBetAmount) => {
+        const finalDeposit = nearBetAmount + BET3_FEE_NEAR; 
+        let betAmountInYecto = utils.format.parseNearAmount(String(finalDeposit));
+        console.log(betAmountInYecto);
         // Call the place_bet method with a i128 arg, and an attachedDeposit in NEAR.
         await contract.place_bet(
             {
                 wager_odds: bettingOdds,
+                memo: team
             },
             "3000000000000", // Optional GAS Amount
-            yectoBetAmount
+            betAmountInYecto
         );
     }
 
@@ -51,7 +55,7 @@ const MakeWagerModal = ({contract, show, handleClose, betData}) => {
                 <Row>
                     <h3>Bet {betAmount} NEAR to win {getPotentialwinnings(betData.odds, betAmount)}</h3>
                 </Row>
-                <button onClick={() => initBet(betData.odds, betAmountInYecto)}>Confirm Bet</button>
+                <button onClick={() => initBet(betData.odds, betAmount, betData.team)}>Confirm Bet</button>
             </Modal.Body>
         </Modal>
     )
