@@ -73,7 +73,7 @@ fn place_bet_with_positive_odds() {
 
     let mut contract = get_initialized_bet();
 
-    contract.place_bet(150, "add Wager");
+    contract.place_bet(150, "add Wager".to_string());
 
     let check_active_wagers = contract.active_wagers.len() > 0;
 
@@ -121,7 +121,7 @@ fn place_bet_with_negative_odds() {
 
     let mut contract = get_initialized_bet();
 
-    contract.place_bet(-150, "add Wager");
+    contract.place_bet(-150, "add Wager".to_string());
 
     let check_active_wagers = contract.active_wagers.len() > 0;
 
@@ -169,7 +169,7 @@ fn contract_owner_place_bet() {
 
     let mut contract = get_initialized_bet();
 
-    contract.place_bet(125, "new bet");
+    contract.place_bet(125, "new bet".to_string());
 }
 
 #[test]
@@ -294,20 +294,9 @@ fn add_additional_wager() {
 
     let mut contract = get_active_bet(150);
 
-    contract.place_bet(125, "new bet");
+    contract.place_bet(125, "new bet".to_string());
 
     let total_active_wagers = contract.active_wagers.to_vec().len();
 
     assert_eq!(2, total_active_wagers, "Active wagers should equal 2");
 }
-
-// #[test]
-// fn set_winner_successful() {
-//     let user_id: AccountId = String::from("sportsbettingcontract.testnet");
-
-//     let context = get_context(user_id, 0);
-
-//     testing_env!(context);
-
-//     let mut contract = get_active_bet(150)
-// }

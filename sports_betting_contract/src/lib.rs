@@ -83,7 +83,7 @@ impl BettingContract {
     }
 
     #[payable]
-    pub fn place_bet(&mut self, wager_odds: i128, memo: &str) {
+    pub fn place_bet(&mut self, wager_odds: i128, memo: String) {
         assert_ne!(
             env::predecessor_account_id(),
             self.owner_id,
@@ -102,7 +102,7 @@ impl BettingContract {
             bet_amount: user.deposited_amount,
             bet_result: BetStatus::Pending,
             participants: Vec::new(),
-            bet_memo: String::from(memo),
+            bet_memo: memo,
         };
 
         user.potential_winnings = wager.get_potential_winnings();
