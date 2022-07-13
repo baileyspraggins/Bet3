@@ -7,8 +7,9 @@ const ActiveWagersTable = ({contract, walletConnection, currentUser }) => {
     
     const ONE_NEAR = 1000000000000000000000000;
 
-    const [activeWagers, setActiveWagers] = useState([]);
+    const BET3_FEE = 50000000000000000000000;
 
+    const [activeWagers, setActiveWagers] = useState([]);
 
     useEffect(() => {
         const promiseWagerData = contract.get_active_wagers()
@@ -60,31 +61,59 @@ const ActiveWagersTable = ({contract, walletConnection, currentUser }) => {
         );
     }
 
-    const PendingRendering = (wagerParticipantId) => {
-        if (wagerParticipantId === currentUser.accountId || currentUser.acountId === contract.contractId) {
-            return (
-                <div>
-                    <Button onClick={() => {CancelBet(2)}}>Cancel Bet</Button>
-                </div>
-            )
-        } else {
-            return (
-                <div>
-                    <Button onClick={() => {AcceptWager("2", "1500000000000000000000000")}}>Back Bet</Button>
-                </div>
-            )
+    const PendingRendering = (wager) => {
+
+        if (currentUser != null) {
+            if (wager.participants[0].account === currentUser.accountId || (currentUser.acountId) === contract.account.accountId) {
+                return (
+                    <div>
+                        <Button onClick={() => {CancelBet(wager.bet_id)}}>Cancel Bet</Button>
+                    </div>
+                )
+            } else {
+                const depositNum = wager.participants[0].potential_winnings  + BET3_FEE;
+                const necessaryDeposit = toFixed(depositNum);
+                console.log(necessaryDeposit);
+                return (
+                    <div>
+                        <Button onClick={() => {AcceptWager(wager.bet_id, necessaryDeposit)}}>Back Bet</Button>
+                    </div>
+                )
+            }
         }
     }
 
     const InProgressRendering = () => {
-        if (currentUser.acountId === contract.contractId) {
-            return (
-                <div>
-                    <Button onClick={() => {SetWinner(2, 2)}}>Select Winner</Button>
-                </div>
-            )
+
+        if (currentUser != null) {
+            if (currentUser.acountId === contract.contractId) {
+                return (
+                    <div>
+                        <Button onClick={() => {SetWinner(2, 2)}}>Select Winner</Button>
+                    </div>
+                )
+            }
         }
+        
     }
+
+    function toFixed(x) {
+        if (Math.abs(x) < 1.0) {
+          var e = parseInt(x.toString().split('e-')[1]);
+          if (e) {
+              x *= Math.pow(10,e-1);
+              x = '0.' + (new Array(e)).join('0') + x.toString().substring(2);
+          }
+        } else {
+          var e = parseInt(x.toString().split('+')[1]);
+          if (e > 20) {
+              e -= 20;
+              x /= Math.pow(10,e);
+              x += (new Array(e+1)).join('0');
+          }
+        }
+        return x;
+      }
 
     return (
         <Table id="active-table">
@@ -103,7 +132,7 @@ const ActiveWagersTable = ({contract, walletConnection, currentUser }) => {
                 {activeWagers.map(wager => {
                     return (
                         <tr>
-                            <td>2</td>
+                            <td>{wager.bet_id}</td>
                             <td>Colorado Avalanche</td>
                             <td>{wager.participants[0].account}</td>
                             <td>{`${wager.bet_amount / ONE_NEAR} NEAR`}</td>
@@ -111,8 +140,8 @@ const ActiveWagersTable = ({contract, walletConnection, currentUser }) => {
                             <td>{wager.bet_result}</td>
                             <td>
                                 {wager.bet_result === "InProgress"
-                                    ? InProgressRendering(wager.participants[0].account)
-                                    : PendingRendering
+                                    ? InProgressRendering
+                                    : PendingRendering(wager)
                                 }
                             </td>
                         </tr>

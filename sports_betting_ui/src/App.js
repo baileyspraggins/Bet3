@@ -8,8 +8,8 @@ function App({contract, walletConnection, currentUser }) {
 
   const signIn = () => {
     walletConnection.requestSignIn(
-      "sportsbettingcontract.testnet",
-      "NEAR Sports Betting",
+      "bet3.testnet",
+      "NEAR Sports Betting | Bet3",
       null,
       null // contract requesting access
     );
@@ -23,11 +23,6 @@ function App({contract, walletConnection, currentUser }) {
   return (
     <div className="app-contnet">
       <Header />
-      <TestWager 
-        contract={contract}
-        walletConnection={walletConnection}
-        currentUser={currentUser}
-      />
       { currentUser
           ? <div>
               <h3>
@@ -46,6 +41,11 @@ function App({contract, walletConnection, currentUser }) {
             <button onClick={signIn}>Log in</button>
           </div>
         }
+      <TestWager 
+        contract={contract}
+        walletConnection={walletConnection}
+        currentUser={currentUser}
+      />
       <ActiveWagersTable 
                   contract={contract}
                   walletConnection={walletConnection}

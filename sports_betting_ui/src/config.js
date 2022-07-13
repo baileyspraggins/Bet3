@@ -1,4 +1,4 @@
-const CONTRACT_NAME = process.env.CONTRACT_NAME || 'sportsbettingcontract.testnet';
+const CONTRACT_NAME = process.env.CONTRACT_NAME || 'bet3.testnet';
 
 function getConfig(env) {
   switch(env) {
