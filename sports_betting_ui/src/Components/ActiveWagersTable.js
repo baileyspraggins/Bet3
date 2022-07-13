@@ -60,6 +60,31 @@ const ActiveWagersTable = ({contract, walletConnection, currentUser }) => {
         );
     }
 
+    const PendingRendering = (wagerParticipantId) => {
+        if (wagerParticipantId === currentUser.accountId || currentUser.acountId === contract.contractId) {
+            return (
+                <div>
+                    <Button onClick={() => {CancelBet(2)}}>Cancel Bet</Button>
+                </div>
+            )
+        } else {
+            return (
+                <div>
+                    <Button onClick={() => {AcceptWager("2", "1500000000000000000000000")}}>Back Bet</Button>
+                </div>
+            )
+        }
+    }
+
+    const InProgressRendering = () => {
+        if (currentUser.acountId === contract.contractId) {
+            return (
+                <div>
+                    <Button onClick={() => {SetWinner(2, 2)}}>Select Winner</Button>
+                </div>
+            )
+        }
+    }
 
     return (
         <Table id="active-table">
@@ -86,8 +111,8 @@ const ActiveWagersTable = ({contract, walletConnection, currentUser }) => {
                             <td>{wager.bet_result}</td>
                             <td>
                                 {wager.bet_result === "InProgress"
-                                    ? <Button onClick={() => {SetWinner(2, 2)}}>Select Winner</Button>
-                                    : <Button onClick={() => {AcceptWager("2", "1500000000000000000000000")}}>Back Bet</Button>
+                                    ? InProgressRendering(wager.participants[0].account)
+                                    : PendingRendering
                                 }
                             </td>
                         </tr>

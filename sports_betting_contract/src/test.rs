@@ -39,6 +39,7 @@ fn get_active_bet(odds: i128) -> BettingContract {
     };
 
     let mut bet = Bet {
+        bet_id: String::from("849623091793"),
         bet_odds: odds,
         bet_amount: 5 * ONE_NEAR,
         bet_result: BetStatus::Pending,
@@ -55,10 +56,8 @@ fn get_active_bet(odds: i128) -> BettingContract {
 
     bet.participants.push(user1);
 
-    let id: String = String::from("ashyweq627jdna12");
-
-    contract.active_wagers.insert(&id);
-    contract.wagers.insert(&id, &bet);
+    contract.active_wagers.insert(&bet.bet_id);
+    contract.wagers.insert(&bet.bet_id, &bet);
 
     contract
 }

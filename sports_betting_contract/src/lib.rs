@@ -2,6 +2,7 @@ use near_sdk::borsh::{self, BorshDeserialize, BorshSerialize};
 use near_sdk::collections::{LookupMap, UnorderedSet};
 use near_sdk::serde::{Deserialize, Serialize};
 use near_sdk::{env, log, near_bindgen, AccountId, PanicOnDefault, Promise};
+use std::str;
 
 const ONE_NEAR: u128 = 1_000_000_000_000_000_000_000_000;
 
@@ -38,6 +39,7 @@ pub struct UserData {
 #[derive(BorshDeserialize, BorshSerialize, Deserialize, Serialize, Debug)]
 #[serde(crate = "near_sdk::serde")]
 pub struct Bet {
+    bet_id: String,
     bet_odds: i128,
     bet_amount: u128,
     bet_result: BetStatus,
@@ -93,6 +95,7 @@ impl BettingContract {
         };
 
         let mut wager: Bet = Bet {
+            bet_id: String::from(""),
             bet_odds: wager_odds,
             bet_amount: user.deposited_amount,
             bet_result: BetStatus::Pending,
@@ -103,11 +106,19 @@ impl BettingContract {
 
         wager.participants.push(user);
 
-        let wager_id = (self.wagers.try_to_vec().iter().len() + 1).to_string();
+        let random_seed = String::from_utf8_lossy(&env::random_seed()).into_owned();
 
-        self.wagers.insert(&wager_id, &wager);
+        let wager_id = random_seed.replace(|c: char| !c.is_ascii(), "");
 
-        self.active_wagers.insert(&wager_id);
+        if self.wagers.contains_key(&wager_id) {
+            panic!("Transaction Error. Please try again");
+        }
+
+        wager.bet_id = wager_id;
+
+        self.wagers.insert(&wager.bet_id, &wager);
+
+        self.active_wagers.insert(&wager.bet_id);
 
         log!(
             "{} placed a bet and deposited {} NEAR to win {}",
@@ -116,7 +127,7 @@ impl BettingContract {
             wager.participants[0].potential_winnings / ONE_NEAR
         );
 
-        log!("The wager Id is {}", &wager_id);
+        log!("The wager Id is {}", &wager.bet_id);
     }
 
     #[payable]
@@ -200,11 +211,11 @@ impl BettingContract {
     pub fn cancel_wager(&mut self, wager_id: &String) {
         let mut selected_wager = self.get_wager(&wager_id);
 
-        assert_eq!(
-            env::predecessor_account_id(),
-            selected_wager.participants[0].account,
-            "Only the user who placed the initial bet can cancel the wager."
-        );
+        if (env::predecessor_account_id() != selected_wager.participants[0].account)
+            || (env::predecessor_account_id() != self.owner_id)
+        {
+            panic!("You are not authorized to cancel this wager");
+        }
 
         Promise::new(env::predecessor_account_id()).transfer(selected_wager.bet_amount);
         selected_wager.bet_result = BetStatus::Canceled;
