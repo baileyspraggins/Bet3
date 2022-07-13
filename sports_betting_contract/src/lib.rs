@@ -5,6 +5,7 @@ use near_sdk::{env, log, near_bindgen, AccountId, PanicOnDefault, Promise};
 use std::str;
 
 const ONE_NEAR: u128 = 1_000_000_000_000_000_000_000_000;
+const BET3_FEE: u128 = 250_000_000_000_000_000_000_000;
 
 // Describes the status of the bet.
 // Win or Lose describe the result of the user who initialized the bet
@@ -44,6 +45,7 @@ pub struct Bet {
     bet_amount: u128,
     bet_result: BetStatus,
     participants: Vec<UserData>,
+    bet_memo: String,
 }
 
 impl Bet {
@@ -81,7 +83,7 @@ impl BettingContract {
     }
 
     #[payable]
-    pub fn place_bet(&mut self, wager_odds: i128) {
+    pub fn place_bet(&mut self, wager_odds: i128, memo: &str) {
         assert_ne!(
             env::predecessor_account_id(),
             self.owner_id,
@@ -90,7 +92,7 @@ impl BettingContract {
 
         let mut user: UserData = UserData {
             account: env::signer_account_id(),
-            deposited_amount: env::attached_deposit(),
+            deposited_amount: env::attached_deposit() - BET3_FEE,
             potential_winnings: 0,
         };
 
@@ -100,6 +102,7 @@ impl BettingContract {
             bet_amount: user.deposited_amount,
             bet_result: BetStatus::Pending,
             participants: Vec::new(),
+            bet_memo: String::from(memo),
         };
 
         user.potential_winnings = wager.get_potential_winnings();

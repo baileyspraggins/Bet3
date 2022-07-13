@@ -44,6 +44,7 @@ fn get_active_bet(odds: i128) -> BettingContract {
         bet_amount: 5 * ONE_NEAR,
         bet_result: BetStatus::Pending,
         participants: Vec::new(),
+        bet_memo: String::from("Test Wager"),
     };
 
     let mut user1 = UserData {
@@ -67,12 +68,12 @@ fn get_active_bet(odds: i128) -> BettingContract {
 fn place_bet_with_positive_odds() {
     let user_id: AccountId = String::from("user1.testnet");
 
-    let context = get_context(user_id, 5 * ONE_NEAR);
+    let context = get_context(user_id, 5 * ONE_NEAR + BET3_FEE);
     testing_env!(context);
 
     let mut contract = get_initialized_bet();
 
-    contract.place_bet(150);
+    contract.place_bet(150, "add Wager");
 
     let check_active_wagers = contract.active_wagers.len() > 0;
 
@@ -115,12 +116,12 @@ fn place_bet_with_positive_odds() {
 fn place_bet_with_negative_odds() {
     let user_id: AccountId = String::from("user1.testnet");
 
-    let context = get_context(user_id, 5 * ONE_NEAR);
+    let context = get_context(user_id, 5 * ONE_NEAR + BET3_FEE);
     testing_env!(context);
 
     let mut contract = get_initialized_bet();
 
-    contract.place_bet(-150);
+    contract.place_bet(-150, "add Wager");
 
     let check_active_wagers = contract.active_wagers.len() > 0;
 
@@ -168,7 +169,7 @@ fn contract_owner_place_bet() {
 
     let mut contract = get_initialized_bet();
 
-    contract.place_bet(125);
+    contract.place_bet(125, "new bet");
 }
 
 #[test]
@@ -293,7 +294,7 @@ fn add_additional_wager() {
 
     let mut contract = get_active_bet(150);
 
-    contract.place_bet(125);
+    contract.place_bet(125, "new bet");
 
     let total_active_wagers = contract.active_wagers.to_vec().len();
 
