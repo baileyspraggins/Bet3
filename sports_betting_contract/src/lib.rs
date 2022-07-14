@@ -223,7 +223,7 @@ impl BettingContract {
         let mut selected_wager = self.get_wager(&wager_id);
 
         if (env::predecessor_account_id() != selected_wager.participants[0].account)
-            || (env::predecessor_account_id() != self.owner_id)
+            && (env::predecessor_account_id() != self.owner_id)
         {
             panic!("You are not authorized to cancel this wager");
         }

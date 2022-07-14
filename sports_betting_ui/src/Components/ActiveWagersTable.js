@@ -7,7 +7,7 @@ const ActiveWagersTable = ({contract, walletConnection, currentUser }) => {
     
     const ONE_NEAR = 1000000000000000000000000;
 
-    // const BET3_FEE = 250000000000000000000000;
+    const BET3_FEE = 250000000000000000000000;
 
     const [activeWagers, setActiveWagers] = useState([]);
 
@@ -24,7 +24,6 @@ const ActiveWagersTable = ({contract, walletConnection, currentUser }) => {
         console.log(data);
         setActiveWagers(data);
     };
-
     displayWagerData();
     }, [])
 
@@ -45,26 +44,28 @@ const ActiveWagersTable = ({contract, walletConnection, currentUser }) => {
                 wager_id: String(wagerId),
                 winner: winner
             },
-            "10000", // Optional GAS Amount
-            null
+            "3000000000000", // Optional GAS Amount
         );
     }
 
     const CancelBet = async (wagerId) => {
-        await contract.cancel_wager(
-            {
-                wager_id: String(wagerId),
+        try {
+            await contract.cancel_wager(
+                {
+                    wager_id: wagerId,
+                },
+                "3000000000000", // Optional GAS Amount     
+            );
+            window.alert("Wager successfully Cancelled");
+        } catch (error) {
+            window.alert(error);
+        }
 
-            },
-            "10000", // Optional GAS Amount
-            null
-        );
     }
 
     const PendingRendering = (wager) => {
-
         if (currentUser != null) {
-            if (wager.participants[0].account === currentUser.accountId || (currentUser.acountId) === contract.account.accountId) {
+            if (wager.participants[0].account === currentUser.accountId || currentUser.acountId === contract.account.accountId) {
                 return (
                     <div>
                         <Button onClick={() => {CancelBet(wager.bet_id)}}>Cancel Bet</Button>
@@ -73,7 +74,6 @@ const ActiveWagersTable = ({contract, walletConnection, currentUser }) => {
             } else {
                 const depositNum = wager.participants[0].potential_winnings  + BET3_FEE;
                 const necessaryDeposit = toFixed(depositNum);
-
                 return (
                     <div>
                         <Button onClick={() => {AcceptWager(wager.bet_id, necessaryDeposit)}}>Back Bet</Button>
@@ -84,7 +84,6 @@ const ActiveWagersTable = ({contract, walletConnection, currentUser }) => {
     }
 
     const InProgressRendering = () => {
-
         if (currentUser != null) {
             if (currentUser.acountId === contract.contractId) {
                 return (
@@ -94,7 +93,6 @@ const ActiveWagersTable = ({contract, walletConnection, currentUser }) => {
                 )
             }
         }
-        
     }
 
     function toFixed(x) {
@@ -131,8 +129,12 @@ const ActiveWagersTable = ({contract, walletConnection, currentUser }) => {
             <tbody>
                 {activeWagers.map(wager => {
                     return (
-                        <tr>
-                            <td>{wager.bet_id}</td>
+                        <tr key={wager.bet_id}>
+                            <td>
+                                {
+                                    <Button className="id-button" onClick={() => {window.alert(wager.bet_id)}}>View Id</Button>
+                                }
+                            </td>
                             <td>{wager.bet_memo}</td>
                             <td>{wager.participants[0].account}</td>
                             <td>{`${wager.bet_amount / ONE_NEAR} NEAR`}</td>

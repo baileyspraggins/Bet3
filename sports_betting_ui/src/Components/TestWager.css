@@ -1,20 +1,30 @@
-#wager-table {
-    border-color: black;
-    border-style: dotted;
-    align-items: center;
-}
-
-td {
-    padding: 1rem;
-    align-items: center;
-    justify-content: center;
-}
-
-.container {
-    display: flex;
-    flex-direction: column;
-    font-size: calc(10px + 2vmin);
+.container h1 {
     color: black;
-    position: relative;
-    align-items: center;
+
+}
+
+
+#wager-table {
+    width: 100%;
+    max-width: 1000px;
+    border-collapse: collapse;
+    border-color: black;
+    margin: 50px auto;
+    background: white;
+    font-size: 24px;
+}
+
+.wager-button {
+    font-size: 18px;
+    background-color: #1a70ec;
+    color: white;
+    border-radius: 3px;
+    border-color: black;
+    border-width: 1px;
+    margin-block-end: .8rem;
+}
+
+.team-logo {
+    max-width: 200px;
+    height: auto;
 }

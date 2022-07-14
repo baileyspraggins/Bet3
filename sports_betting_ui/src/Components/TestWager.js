@@ -4,11 +4,11 @@ import { Table } from 'react-bootstrap';
 import './TestWager.css';
 import * as nearAPI from 'near-api-js';
 import MakeWagerModal from './MakeWagerModal';
+import AvsLogo from '../Assets/team_logos/colorado_avalanche_logo.png';
+import LightningLogo from '../Assets/team_logos/tampa_bay_lightning_logo.png';
 
 
 const TestWager = ({contract, WalletConnection, currentUser}) => {
-
-    const { utils } = nearAPI;
 
     const [selectedData, setSelectedData] = useState('');
 
@@ -26,10 +26,10 @@ const TestWager = ({contract, WalletConnection, currentUser}) => {
     const mockBet = {
         teamOne: "Tampa Bay Lightning",
         teamOneOdds: 125,
-        teamOneLogo: '',
+        teamOneLogo: LightningLogo,
         teamTwo: "Colorado Avalanche",
         teamTwoOdds: -150,
-        teamTwoLogo: '',
+        teamTwoLogo: AvsLogo,
         sport: "NHL Hockey",
         date: "06/26/22",
         time: "7:00 PM"
@@ -64,7 +64,7 @@ const TestWager = ({contract, WalletConnection, currentUser}) => {
         <div>
             <div className='container'>
                 <h1>Smart Contract Betting</h1> 
-                <Table border={3} id="wager-table">
+                <Table bordered hover variant="light" id="wager-table">
                     <thead>
                         <tr>
                             <td>Date</td>
@@ -85,14 +85,13 @@ const TestWager = ({contract, WalletConnection, currentUser}) => {
                                 <p>{mockBet.teamTwo} {mockBet.teamTwoOdds}</p>
                             </td>
                             <td>
-                                <button onClick={() => { 
+                                <button className="wager-button" onClick={() => { 
                                     getSelectedData(1)
                                     handleShow()
                                     console.log(selectedData)
                                     }}>Place Bet</button>
                                 <br/>
-                                <br />
-                                <button onClick={() => { 
+                                <button className="wager-button" onClick={() => { 
                                     getSelectedData(2)
                                     handleShow()
                                     console.log(selectedData)

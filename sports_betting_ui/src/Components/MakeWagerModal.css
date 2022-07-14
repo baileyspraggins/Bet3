@@ -2,6 +2,8 @@
     text-align: center;
     align-items: center;
     border-color: white;
+    display: grid;
+    justify-content: center;
 }
 
 #modal-body {
@@ -17,4 +19,43 @@
 .betModal {
     border-color: black;
     border-width: 2px;
+}
+
+.header-level-1 {
+    font-size: 24px;
+}
+
+.header-level-2 {
+    font-size: 18px;
+}
+
+.bet-entry-group {
+    display: inline-flex;
+}
+
+.bet-entry-label {
+    display: inline;
+    margin-inline-end: .5rem;
+    font-weight: bold;
+    padding-top: 4px;
+}
+
+.bet-entry-control {
+    display: inline;
+    height: 30px;
+    max-width: 100px;
+}
+
+.confirm-button {
+    font-size: 18px;
+    background-color: #1a70ec;
+    color: white;
+    border-radius: 3px;
+    border-color: black;
+    border-width: 1px;
+    margin-block-end: .8rem;
+}
+
+#modal-body h3 {
+    font-size: 18px;
 }

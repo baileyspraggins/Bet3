@@ -1,17 +1,14 @@
 img {
-    height: 200px;
-    padding-top: 25px;
-    padding-bottom: 25px;
-    pointer-events: none;
-    display: block;
-    margin-left: auto;
-    margin-right: auto;
-  }
+  height: 200px;
+  padding-top: 10px;
+  padding-bottom: 1px;
+  pointer-events: none;
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  background-color: white;
+}
 
-.container {
-display: flex;
-flex-direction: column;
-font-size: calc(10px + 2vmin);
-color: black;
-position: relative;
+.header-container {
+  background-color: white;
 }
