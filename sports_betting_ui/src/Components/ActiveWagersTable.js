@@ -39,13 +39,19 @@ const ActiveWagersTable = ({contract, walletConnection, currentUser }) => {
     }
 
     const SetWinner = async (wagerId, winner) => {
-        await contract.set_winner(
-            {
-                wager_id: String(wagerId),
-                winner: winner
-            },
-            "3000000000000", // Optional GAS Amount
-        );
+        try {
+            await contract.set_winner(
+                {
+                    wager_id: String(wagerId),
+                    winner: winner
+                },
+                "3000000000000", // Optional GAS Amount
+            );
+            window.alert("Winner sucessfully set and paid out");
+            window.location.reload();
+        } catch (error) {
+            window.alert(error);
+        }
     }
 
     const CancelBet = async (wagerId) => {
@@ -56,7 +62,8 @@ const ActiveWagersTable = ({contract, walletConnection, currentUser }) => {
                 },
                 "3000000000000", // Optional GAS Amount     
             );
-            window.alert("Wager successfully Cancelled");
+            window.alert("Wager successfully cancelled");
+            window.location.reload();
         } catch (error) {
             window.alert(error);
         }
@@ -65,10 +72,10 @@ const ActiveWagersTable = ({contract, walletConnection, currentUser }) => {
 
     const PendingRendering = (wager) => {
         if (currentUser != null) {
-            if (wager.participants[0].account === currentUser.accountId || currentUser.acountId === contract.account.accountId) {
+            if (wager.participants[0].account === currentUser.accountId || currentUser.accountId === contract.contractId) {
                 return (
                     <div>
-                        <Button onClick={() => {CancelBet(wager.bet_id)}}>Cancel Bet</Button>
+                        <Button variant="warning" onClick={() => {CancelBet(wager.bet_id)}}>Cancel Bet</Button>
                     </div>
                 )
             } else {
@@ -83,12 +90,13 @@ const ActiveWagersTable = ({contract, walletConnection, currentUser }) => {
         }
     }
 
-    const InProgressRendering = () => {
+    const InProgressRendering = (wager) => {
         if (currentUser != null) {
-            if (currentUser.acountId === contract.contractId) {
+            if (currentUser.accountId === contract.contractId) {
                 return (
                     <div>
-                        <Button onClick={() => {SetWinner(2, 2)}}>Select Winner</Button>
+                        <Button className="win-btn" variant="success" onClick={() => {SetWinner(wager.bet_id, 1)}}>Win</Button>{' '}
+                        <Button className="loss-btn" variant="danger" onClick={() => {SetWinner(wager.bet_id, 2)}}>Lose</Button>
                     </div>
                 )
             }
@@ -140,12 +148,9 @@ const ActiveWagersTable = ({contract, walletConnection, currentUser }) => {
                             <td>{`${wager.bet_amount / ONE_NEAR} NEAR`}</td>
                             <td>{wager.bet_odds}</td>
                             <td>{wager.bet_result}</td>
-                            <td>
-                                {wager.bet_result === "InProgress"
-                                    ? InProgressRendering
-                                    : PendingRendering(wager)
-                                }
-                            </td>
+                            <td>{wager.bet_result === "InProgress"
+                            ? InProgressRendering(wager)
+                            : PendingRendering(wager)}</td>
                         </tr>
                     )
                 })}

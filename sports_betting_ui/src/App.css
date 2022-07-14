@@ -18,3 +18,8 @@
 .data-content {
   padding-top: 3rem;
 }
+
+.general-content {
+  position: sticky;
+  top: 0;
+}

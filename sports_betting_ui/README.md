@@ -36,9 +36,9 @@
 
     3. If you want to place a bet navigate to the current wager and click the place bet button that is to the right of the team you would like to bet on.
 
-    4. If you want to back someone elses wager. There will be a list of pending wagers waiting bet. Select the back this bet button to wager against that user.
+    4. If you want to back someone elses wager. There will be a list of pending wagers. Select the back bet button to wager against that user.
 
-    5. If you depoyed this contract you can select and submit the winner which will pay out all users to made a winning wager.
+    5. If you depoyed this contract you can select and submit the winner which will pay out the winner of the wager.
 
 ## Languages and Frameworks Used
 
